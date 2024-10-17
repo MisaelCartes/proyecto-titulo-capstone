@@ -2,20 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { FaUser, FaFolder, FaRegClipboard, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper } from 'react-icons/fa';
-import ViewUser from './ViewUser'; // Asegúrate de importar tu componente
+import ViewUser from './ViewUser';
 import Dashboard from './Dasboard';
 import { ViewNews } from './ViewNews';
-
+import { CreateNews } from './CreateNews';
+import CreateCertificationFrom from './CreateCertificationFrom'; // Importar el nuevo componente
+import CertificadoStatus from './CertificadoStatus'; // Importar el nuevo componente
 
 const SidebarPanel = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [showCertificados, setShowCertificados] = useState(false);
     const [showReservas, setShowReservas] = useState(false);
-    const [viewUser, setViewUser] = useState(false); // Estado para controlar la vista de usuarios
-    const [viewDashboard, setViewDashboard] = useState(true); // Estado para mostrar el Dashboard
-    const [viewNews, setViewNews] = useState(false); // Nuevo estado para controlar la vista de noticias
-    const navigate = useNavigate(); // Hook para la navegación
-    const [rut, setRut] = useState(null); // Estado para almacenar el rut
+    const [viewUser, setViewUser] = useState(false);
+    const [viewDashboard, setViewDashboard] = useState(true);
+    const [viewNews, setViewNews] = useState(false);
+    const [viewCreateNews, setViewCreateNews] = useState(false);
+    const [viewCreateCertification, setViewCreateCertification] = useState(false); // Nuevo estado
+    const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false); // Nuevo estado
+    const navigate = useNavigate();
+    const [rut, setRut] = useState(null);
 
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
@@ -23,7 +28,7 @@ const SidebarPanel = () => {
             try {
                 const decodedToken = jwtDecode(accessToken);
                 const { exp, rut } = decodedToken;
-                setRut(rut); // Guardar el rut en el estado
+                setRut(rut);
 
                 if (exp * 1000 < Date.now()) {
                     localStorage.removeItem('token');
@@ -53,21 +58,57 @@ const SidebarPanel = () => {
     };
 
     const handleUserClick = () => {
-        setViewUser(true); // Activar la vista de usuario
-        setViewDashboard(false); // Desactivar la vista del Dashboard
-        setViewNews(false); // Desactivar la vista de noticias
+        setViewUser(true);
+        setViewDashboard(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
     };
 
     const handleNewsClick = () => {
-        setViewNews(true); // Activar la vista de noticias
-        setViewDashboard(false); // Desactivar la vista del Dashboard
-        setViewUser(false); // Desactivar la vista de usuarios
+        setViewNews(true);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+    };
+
+    const handleCreateNewsClick = () => {
+        setViewCreateNews(true);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+    };
+
+    const handleCreateCertificationClick = () => {
+        setViewCreateCertification(true);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCertificadoStatus(false);
+    };
+
+    const handleCertificadoStatusClick = () => {
+        setViewCertificadoStatus(true);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
     };
 
     const handleBackClick = () => {
-        setViewUser(false); // Volver a la vista anterior
-        setViewDashboard(true); // Activar la vista del Dashboard
-        setViewNews(false); // Desactivar la vista de noticias
+        setViewUser(false);
+        setViewDashboard(true);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
     };
 
     return (
@@ -101,7 +142,7 @@ const SidebarPanel = () => {
                                 to="/panel"
                                 className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
                                 activeClassName="bg-gray-600"
-                                onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); }} // Cambiar a Dashboard
+                                onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); setViewCreateNews(false); setViewCreateCertification(false); setViewCertificadoStatus(false); }}
                             >
                                 <FaTachometerAlt className="mr-2" />
                                 <span>Dashboard</span>
@@ -119,22 +160,20 @@ const SidebarPanel = () => {
                             </div>
                             {showCertificados && (
                                 <div className="pl-4">
-                                    <NavLink
-                                        to="/certificados/solicitar"
-                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
-                                        activeClassName="bg-gray-600"
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleCreateCertificationClick}
                                     >
                                         <FaRegClipboard className="mr-2" />
                                         <span>Solicitar Certificado</span>
-                                    </NavLink>
-                                    <NavLink
-                                        to="/solicitudes/consultar"
-                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
-                                        activeClassName="bg-gray-600"
+                                    </div>
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleCertificadoStatusClick}
                                     >
                                         <FaFolder className="mr-2" />
                                         <span>Consultar Solicitudes</span>
-                                    </NavLink>
+                                    </div>
                                 </div>
                             )}
 
@@ -144,19 +183,15 @@ const SidebarPanel = () => {
                             </div>
                             {showReservas && (
                                 <div className="pl-4">
-                                    <NavLink
-                                        to="/noticias/publicar"
-                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
-                                        activeClassName="bg-gray-600"
-                                        onClick={handleNewsClick}
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleCreateNewsClick}
                                     >
                                         <FaPaperPlane className="mr-2" />
-                                        <span>Publicar Nueva Noticia</span>
-                                    </NavLink>
+                                        <span>Publicar Noticia</span>
+                                    </div>
                                     <div
-
-                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
-                                        activeClassName="bg-gray-600"
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                         onClick={handleNewsClick}
                                     >
                                         <FaEye className="mr-2" />
@@ -180,7 +215,7 @@ const SidebarPanel = () => {
                 {isOpen && (
                     <div className="mt-auto mb-4">
                         <NavLink
-                            to={`/user/${rut}/edit`} // Usa el rut en la ruta
+                            to={`/user/${rut}/edit`}
                             className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
                             activeClassName="bg-gray-600"
                         >
@@ -209,7 +244,6 @@ const SidebarPanel = () => {
 
             {/* Contenido Principal */}
             <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen">
-                {/* Barra de búsqueda */}
                 <div className="mt-4">
                     <input
                         type="text"
@@ -219,11 +253,17 @@ const SidebarPanel = () => {
                 </div>
 
                 {viewUser ? (
-                    <ViewUser onBackClick={handleBackClick} /> // Renderizar ViewUser
+                    <ViewUser onBackClick={handleBackClick} />
                 ) : viewDashboard ? (
-                    <Dashboard /> // Renderizar Dashboard
+                    <Dashboard />
                 ) : viewNews ? (
-                    <ViewNews onBackClick={handleBackClick} /> // Renderizar ViewNews
+                    <ViewNews onBackClick={handleBackClick} />
+                ) : viewCreateNews ? (
+                    <CreateNews />
+                ) : viewCreateCertification ? (
+                    <CreateCertificationFrom onBackClick={handleBackClick} />
+                ) : viewCertificadoStatus ? (
+                    <CertificadoStatus onBackClick={handleBackClick} />
                 ) : null}
             </div>
         </div>

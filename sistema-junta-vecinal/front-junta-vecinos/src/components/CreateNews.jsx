@@ -5,10 +5,12 @@ import axios from 'axios';
 export const CreateNews = () => {
   const [formData, setFormData] = useState({
     title: '',
-    content: '',
+    description: '',
+    source: '',
     author: '',
-    date: '',
-    image: null,
+    publishedAt: '',
+    category: '',
+    urlToImage: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -17,54 +19,42 @@ export const CreateNews = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, image: e.target.files[0] });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({}); // Reset previous errors
-
-    // Create form data for sending to the backend
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('content', formData.content);
-    data.append('author', formData.author);
-    data.append('date', formData.date);
-    if (formData.image) {
-      data.append('image', formData.image);
-    }
+    setErrors({}); // Reiniciar errores previos
 
     try {
-      // Send request to /create/news
-      await axios.post('http://127.0.0.1:8000/create/news', data, {
+      // Enviar solicitud a /create/news
+      await axios.post('http://127.0.0.1:8000/create/news', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
 
-      // Show success message
+      // Mostrar mensaje de éxito
       Swal.fire({
         icon: 'success',
         title: 'Noticia creada',
         text: 'La noticia se ha creado exitosamente.',
       });
 
-      // Reset form
+      // Reiniciar formulario
       setFormData({
         title: '',
-        content: '',
+        description: '',
+        source: '',
         author: '',
-        date: '',
-        image: null,
+        publishedAt: '',
+        category: '',
+        urlToImage: '',
       });
     } catch (error) {
-      // Handle errors
+      // Manejar errores
       if (error.response && error.response.data) {
         setErrors(error.response.data);
       }
 
-      // Show error message
+      // Mostrar mensaje de error
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -74,30 +64,24 @@ export const CreateNews = () => {
   };
 
   return (
-    <div
-      className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8"
-      style={{ backgroundColor: '#0D1A2D' }}
-    >
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <img
-          className="mx-auto h-10 w-auto"
-          src="/diversity.png"
-          alt="Junta Vecinos"
-        />
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+    <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8"> {/* Ancho del contenedor ajustado */}
+      <div
+        className="max-w-3xl rounded-lg p-8 mx-auto bg-gray-800" // Color de fondo para el formulario
+        style={{ width: '100%' }} // Aseguramos que el formulario tenga un ancho del 100%
+      >
+        <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
           Crear una nueva noticia
         </h2>
-      </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-3xl">
         <form
           className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
           onSubmit={handleSubmit}
         >
+          {/** Título */}
           <div className="sm:col-span-2">
             <label
               htmlFor="title"
-              className="block text-sm font-medium leading-6 text-white"
+              className="block text-sm font-medium text-white"
             >
               Título
             </label>
@@ -109,7 +93,7 @@ export const CreateNews = () => {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
               />
               {errors.title && (
                 <p className="text-red-500 text-xs mt-1">{errors.title}</p>
@@ -117,33 +101,59 @@ export const CreateNews = () => {
             </div>
           </div>
 
+          {/** Descripción */}
           <div className="sm:col-span-2">
             <label
-              htmlFor="content"
-              className="block text-sm font-medium leading-6 text-white"
+              htmlFor="description"
+              className="block text-sm font-medium text-white"
             >
-              Contenido
+              Descripción
             </label>
             <div className="mt-2">
               <textarea
-                id="content"
-                name="content"
-                value={formData.content}
+                id="description"
+                name="description"
+                rows="4"
+                value={formData.description}
                 onChange={handleChange}
                 required
-                rows="4"
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
               />
-              {errors.content && (
-                <p className="text-red-500 text-xs mt-1">{errors.content}</p>
+              {errors.description && (
+                <p className="text-red-500 text-xs mt-1">{errors.description}</p>
               )}
             </div>
           </div>
 
-          <div>
+          {/** Fuente */}
+          <div className="sm:col-span-1">
+            <label
+              htmlFor="source"
+              className="block text-sm font-medium text-white"
+            >
+              Fuente
+            </label>
+            <div className="mt-2">
+              <input
+                id="source"
+                name="source"
+                type="text"
+                value={formData.source}
+                onChange={handleChange}
+                required
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+              />
+              {errors.source && (
+                <p className="text-red-500 text-xs mt-1">{errors.source}</p>
+              )}
+            </div>
+          </div>
+
+          {/** Autor */}
+          <div className="sm:col-span-1">
             <label
               htmlFor="author"
-              className="block text-sm font-medium leading-6 text-white"
+              className="block text-sm font-medium text-white"
             >
               Autor
             </label>
@@ -155,7 +165,7 @@ export const CreateNews = () => {
                 value={formData.author}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
               />
               {errors.author && (
                 <p className="text-red-500 text-xs mt-1">{errors.author}</p>
@@ -163,53 +173,86 @@ export const CreateNews = () => {
             </div>
           </div>
 
-          <div>
+          {/** Fecha de publicación */}
+          <div className="sm:col-span-1">
             <label
-              htmlFor="date"
-              className="block text-sm font-medium leading-6 text-white"
+              htmlFor="publishedAt"
+              className="block text-sm font-medium text-white"
             >
-              Fecha
+              Fecha de publicación
             </label>
             <div className="mt-2">
               <input
-                id="date"
-                name="date"
+                id="publishedAt"
+                name="publishedAt"
                 type="date"
-                value={formData.date}
+                value={formData.publishedAt}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
               />
-              {errors.date && (
-                <p className="text-red-500 text-xs mt-1">{errors.date}</p>
+              {errors.publishedAt && (
+                <p className="text-red-500 text-xs mt-1">{errors.publishedAt}</p>
               )}
             </div>
           </div>
 
-          <div className="sm:col-span-2">
+          {/** Categoría */}
+          <div className="sm:col-span-1">
             <label
-              htmlFor="image"
-              className="block text-sm font-medium leading-6 text-white"
+              htmlFor="category"
+              className="block text-sm font-medium text-white"
             >
-              Imagen (opcional)
+              Categoría
             </label>
             <div className="mt-2">
               <input
-                id="image"
-                name="image"
-                type="file"
-                onChange={handleFileChange}
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                id="category"
+                name="category"
+                type="text"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
               />
+              {errors.category && (
+                <p className="text-red-500 text-xs mt-1">{errors.category}</p>
+              )}
             </div>
           </div>
 
+          {/** URL de la imagen */}
+          <div className="sm:col-span-1">
+            <label
+              htmlFor="urlToImage"
+              className="block text-sm font-medium text-white"
+            >
+              Seleccionar imagen
+            </label>
+            <div className="mt-2">
+              <input
+                id="urlToImage"
+                name="urlToImage"
+                type="file"
+                accept="image/*" // Aceptar solo archivos de imagen
+                onChange={(e) => handleChange(e)} // Cambiar la función según sea necesario
+                required
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+              />
+              {errors.urlToImage && (
+                <p className="text-red-500 text-xs mt-1">{errors.urlToImage}</p>
+              )}
+            </div>
+          </div>
+
+
+          {/** Botón de envío */}
           <div className="sm:col-span-2">
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm ring-1 ring-indigo-600 ring-inset hover:bg-indigo-700 focus:outline focus:outline-2 focus:outline-indigo-600 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
+              className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
             >
-              Crear noticia
+              Crear Noticia
             </button>
           </div>
         </form>

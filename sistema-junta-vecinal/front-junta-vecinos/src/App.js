@@ -13,6 +13,7 @@ import { FamilyRegister } from './components/FamilyRegister';
 import { CreateNews } from './components/CreateNews';
 import { ViewNews } from './components/ViewNews';
 import CreateCertificationFrom from './components/CreateCertificationFrom';
+import CertificadoStatus from './components/CertificadoStatus';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/create/news" element={<CreateNews />} />
         <Route path="/read/news" element={<ViewNews />} />
         <Route path="/certificados/solicitar/" element={<CreateCertificationFrom />} />
+        <Route path="/certificados/check/" element={<CertificadoStatus />} />
       </Routes>
     </Router>
 

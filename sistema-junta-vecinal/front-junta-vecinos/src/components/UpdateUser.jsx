@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { jwtDecode } from 'jwt-decode';
 import validarRut from '../middlewares/validarRut';
-import { useNavigate, useParams } from 'react-router-dom';
+import { NavLink, useNavigate, useParams } from 'react-router-dom';
 
 const UpdateUser = () => {
     const { rut } = useParams();
@@ -140,10 +140,10 @@ const UpdateUser = () => {
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "El correo electrónico no es válido.";
 
         if (formData.password && formData.password.length >= 2) {
-           if (formData.password.length > 30) {
-              newErrors.password= "El password debe tener al menos 6 caracteres.";
+            if (formData.password.length > 30) {
+                newErrors.password = "El password debe tener al menos 6 caracteres.";
             }
-          }
+        }
 
 
         return newErrors;
@@ -182,7 +182,7 @@ const UpdateUser = () => {
                     icon: "success",
                     confirmButtonText: "Aceptar",
                 });
-                navigate('/users'); // Redirigir a la lista de usuarios
+                navigate('/panel'); 
             })
             .catch((error) => {
                 console.error("Error al actualizar el usuario:", error);
@@ -207,7 +207,14 @@ const UpdateUser = () => {
                     Actualiza tu cuenta
                 </h2>
             </div>
-
+            <div class="mt-4 text-left">
+                <NavLink
+                    to="/panel"
+                    className="rounded-md bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                >
+                    Volver
+                </NavLink>
+            </div>
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-3xl">
                 <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
                     {/* Primer layout */}

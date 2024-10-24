@@ -1,24 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { FaUser, FaFolder, FaRegClipboard, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper } from 'react-icons/fa';
+import { FaUser, FaFolder, FaRegClipboard, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper, FaUserPlus } from 'react-icons/fa';
 import ViewUser from './ViewUser';
 import Dashboard from './Dasboard';
 import { ViewNews } from './ViewNews';
 import { CreateNews } from './CreateNews';
-import CreateCertificationFrom from './CreateCertificationFrom'; // Importar el nuevo componente
-import CertificadoStatus from './CertificadoStatus'; // Importar el nuevo componente
+import CreateCertificationFrom from './CreateCertificationFrom';
+import CertificadoStatus from './CertificadoStatus';
+import { FamilyRegister } from './FamilyRegister';
+
+
 
 const SidebarPanel = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [showCertificados, setShowCertificados] = useState(false);
     const [showReservas, setShowReservas] = useState(false);
+    const [showUsuarios, setShowUsuarios] = useState(false);
     const [viewUser, setViewUser] = useState(false);
     const [viewDashboard, setViewDashboard] = useState(true);
     const [viewNews, setViewNews] = useState(false);
     const [viewCreateNews, setViewCreateNews] = useState(false);
-    const [viewCreateCertification, setViewCreateCertification] = useState(false); // Nuevo estado
-    const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false); // Nuevo estado
+    const [viewCreateCertification, setViewCreateCertification] = useState(false);
+    const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false);
+    const [viewFamilyRegister, setViewFamilyRegister] = useState(false);
     const navigate = useNavigate();
     const [rut, setRut] = useState(null);
 
@@ -57,6 +62,10 @@ const SidebarPanel = () => {
         setShowReservas(!showReservas);
     };
 
+    const toggleUsuarios = () => {
+        setShowUsuarios(!showUsuarios);
+    };
+
     const handleUserClick = () => {
         setViewUser(true);
         setViewDashboard(false);
@@ -64,6 +73,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
     };
 
     const handleNewsClick = () => {
@@ -73,6 +83,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
     };
 
     const handleCreateNewsClick = () => {
@@ -82,6 +93,7 @@ const SidebarPanel = () => {
         setViewNews(false);
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
     };
 
     const handleCreateCertificationClick = () => {
@@ -91,6 +103,7 @@ const SidebarPanel = () => {
         setViewNews(false);
         setViewCreateNews(false);
         setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
     };
 
     const handleCertificadoStatusClick = () => {
@@ -100,6 +113,17 @@ const SidebarPanel = () => {
         setViewNews(false);
         setViewCreateNews(false);
         setViewCreateCertification(false);
+        setViewFamilyRegister(false);
+    };
+
+    const handleFamilyRegisterClick = () => {
+        setViewFamilyRegister(true);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
     };
 
     const handleBackClick = () => {
@@ -109,6 +133,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
     };
 
     return (
@@ -142,18 +167,37 @@ const SidebarPanel = () => {
                                 to="/panel"
                                 className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
                                 activeClassName="bg-gray-600"
-                                onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); setViewCreateNews(false); setViewCreateCertification(false); setViewCertificadoStatus(false); }}
+                                onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); setViewCreateNews(false); setViewCreateCertification(false); setViewCertificadoStatus(false); setViewFamilyRegister(false); }}
                             >
                                 <FaTachometerAlt className="mr-2" />
                                 <span>Dashboard</span>
                             </NavLink>
                             <div
                                 className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
-                                onClick={handleUserClick}
+                                onClick={toggleUsuarios}
                             >
                                 <FaUser className="mr-2" />
                                 <span>Usuarios</span>
                             </div>
+                            {showUsuarios && (
+                                <div className="pl-4">
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleUserClick}
+                                    >
+                                        <FaUser className="mr-2" />
+                                        <span>Ver Usuarios</span>
+                                    </div>
+
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleFamilyRegisterClick}
+                                    >
+                                        <FaUserPlus className="mr-2" />
+                                        <span>Agregar Miembro</span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer" onClick={toggleCertificados}>
                                 <FaFileAlt className="mr-2" />
                                 <span>Certificados</span>
@@ -264,7 +308,10 @@ const SidebarPanel = () => {
                     <CreateCertificationFrom onBackClick={handleBackClick} />
                 ) : viewCertificadoStatus ? (
                     <CertificadoStatus onBackClick={handleBackClick} />
+                ) : viewFamilyRegister ? (
+                    <FamilyRegister onBackClick={handleBackClick} />
                 ) : null}
+
             </div>
         </div>
     );

@@ -107,6 +107,7 @@ export const CreateNews = () => {
               id="title"
               name="title"
               type="text"
+              placeholder='Ingrese un titulo'
               value={formData.title}
               onChange={handleChange}
               required
@@ -119,6 +120,7 @@ export const CreateNews = () => {
             <textarea
               id="description"
               name="description"
+              placeholder='Ingrese una descripción'
               rows="4"
               value={formData.description}
               onChange={handleChange}
@@ -132,6 +134,7 @@ export const CreateNews = () => {
             <input
               id="source"
               name="source"
+              placeholder='Ingrese la fuente de la noticia'
               type="text"
               value={formData.source}
               onChange={handleChange}
@@ -146,6 +149,7 @@ export const CreateNews = () => {
               id="author"
               name="author"
               type="text"
+              placeholder='Ingrese el nombre del autor'
               value={formData.author}
               onChange={handleChange}
               required
@@ -159,6 +163,7 @@ export const CreateNews = () => {
               id="publishedAt"
               name="publishedAt"
               type="datetime-local"
+              placeholder='Ingrese la fecha de publicación'
               value={formData.publishedAt}
               onChange={handleChange}
               required
@@ -172,6 +177,7 @@ export const CreateNews = () => {
               id="dateVigencia"
               name="dateVigencia"
               type="datetime-local"
+              placeholder='Ingrese la fecha de vigencia'
               value={formData.dateVigencia}
               onChange={handleChange}
               required
@@ -185,6 +191,7 @@ export const CreateNews = () => {
               id="category"
               name="category"
               type="text"
+              placeholder='Ingrese la categoría'
               value={formData.category}
               onChange={handleChange}
               required

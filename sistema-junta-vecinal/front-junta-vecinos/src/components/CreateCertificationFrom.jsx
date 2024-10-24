@@ -83,6 +83,7 @@ const CreateCertificationFrom = () => {
                                 id="rut"
                                 name="rut"
                                 type="text"
+                                placeholder='Ingrese tu rut'
                                 value={formData.rut}
                                 onChange={handleChange}
                                 required
@@ -102,6 +103,7 @@ const CreateCertificationFrom = () => {
                                 id="nombres"
                                 name="nombres"
                                 type="text"
+                                placeholder='Ingrese tu nombre completo'
                                 value={formData.nombres}
                                 onChange={handleChange}
                                 required
@@ -121,6 +123,7 @@ const CreateCertificationFrom = () => {
                                 id="email"
                                 name="email"
                                 type="email"
+                                placeholder='Ingrese tu correo electrónico'
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
@@ -140,6 +143,7 @@ const CreateCertificationFrom = () => {
                                 id="telefono"
                                 name="telefono"
                                 type="text"
+                                placeholder='Ingrese tu número telefónico'
                                 value={formData.telefono}
                                 onChange={handleChange}
                                 required
@@ -202,6 +206,7 @@ const CreateCertificationFrom = () => {
                                 id="direccion"
                                 name="direccion"
                                 type="text"
+                                placeholder='Ingrese la dirección de tu domicilio'
                                 value={formData.direccion}
                                 onChange={handleChange}
                                 required
@@ -226,4 +231,4 @@ const CreateCertificationFrom = () => {
     );
 };
 
-export default CreateCertificationFrom; // Exportación por defecto
+export default CreateCertificationFrom;

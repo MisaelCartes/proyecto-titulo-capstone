@@ -14,6 +14,7 @@ import { CreateNews } from './components/CreateNews';
 import { ViewNews } from './components/ViewNews';
 import CreateCertificationFrom from './components/CreateCertificationFrom';
 import CertificadoStatus from './components/CertificadoStatus';
+import MapaInteractive from './components/MapaInteractive';
 
 function App() {
   return (
@@ -32,8 +33,10 @@ function App() {
         <Route path="/family/register" element={<FamilyRegister />} />
         <Route path="/create/news" element={<CreateNews />} />
         <Route path="/read/news" element={<ViewNews />} />
+        <Route path="/maps" element={<MapaInteractive />} />
         <Route path="/certificados/solicitar/" element={<CreateCertificationFrom />} />
         <Route path="/certificados/check/" element={<CertificadoStatus />} />
+        <Route path="/noticias/:id/edit" element={<CreateNews />} />
       </Routes>
     </Router>
 

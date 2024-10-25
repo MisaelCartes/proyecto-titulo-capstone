@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import validarRut from '../middlewares/validarRut';
+
 
 export const FamilyRegister = () => {
   const initialFormState = {
@@ -18,31 +20,6 @@ export const FamilyRegister = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Función mejorada para validar RUT chileno
-  const validateRut = (rut) => {
-    if (!rut) return false;
-    
-    // Remover guiones y puntos
-    const rutClean = rut.replace(/[.-]/g, '').toUpperCase();
-    if (!/^[0-9]{1,8}[0-9K]$/.test(rutClean)) return false;
-
-    const dv = rutClean.slice(-1);
-    const rutNumber = parseInt(rutClean.slice(0, -1), 10);
-    
-    let sum = 0;
-    let multiplier = 2;
-
-    // Calcular dígito verificador
-    for (let i = String(rutNumber).split('').reverse().join('').length - 1; i >= 0; i--) {
-      sum += parseInt(String(rutNumber).split('').reverse().join('').charAt(i)) * multiplier;
-      multiplier = multiplier === 7 ? 2 : multiplier + 1;
-    }
-
-    const expectedDv = 11 - (sum % 11);
-    const calculatedDv = expectedDv === 11 ? '0' : expectedDv === 10 ? 'K' : String(expectedDv);
-    
-    return dv === calculatedDv;
-  };
 
   // Función mejorada para validar email
   const validateEmail = (email) => {
@@ -59,10 +36,11 @@ export const FamilyRegister = () => {
   // Función para formatear RUT
   const formatRut = (rut) => {
     if (!rut) return '';
-    
+
+
     const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
     if (cleanRut.length < 2) return cleanRut;
-    
+
     const dv = cleanRut.slice(-1);
     const rutBody = cleanRut.slice(0, -1);
     return rutBody.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + dv;
@@ -75,7 +53,7 @@ export const FamilyRegister = () => {
 
     if (!formData.rutMember) {
       newErrors.rutMember = 'RUT del miembro es requerido';
-    } else if (!validateRut(formData.rutMember)) {
+    } else if (!validarRut(formData.rutMember)) {
       newErrors.rutMember = 'RUT inválido';
     }
 
@@ -182,10 +160,10 @@ export const FamilyRegister = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      
+
       let errorMessage = 'Error al registrar el miembro';
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -275,19 +253,33 @@ export const FamilyRegister = () => {
               Relación
             </label>
             <div className="mt-2">
-              <input
+              <select
                 id="relationship"
                 name="relationship"
-                type="text"
-                placeholder="Ej: Hijo, Hija, Esposa, etc."
                 value={formData.relationship}
                 onChange={handleChange}
                 disabled={isSubmitting}
                 className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-              />
+              >
+                <option value="" disabled>
+                  Seleccione la relación
+                </option>
+                <option value="padre">Padre</option>
+                <option value="madre">Madre</option>
+                <option value="hermano/a">Hermano/a</option>
+                <option value="esposo/a">Esposo/a</option>
+                <option value="hijo/a">Hijo/a</option>
+                <option value="conyuge">Cónyuge</option>
+                <option value="pareja">Pareja</option>
+                <option value="tio/a">Tío/a</option>
+                <option value="primo/a">Primo/a</option>
+                <option value="abuelo/a">Abuelo/a</option>
+                <option value="otro">Otro</option>
+              </select>
               {errors.relationship && <p className="text-red-500 text-xs mt-1">{errors.relationship}</p>}
             </div>
           </div>
+
 
           {/* Fecha de Nacimiento */}
           <div>
@@ -318,7 +310,7 @@ export const FamilyRegister = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="Ingrese su email"
+                placeholder="Ingrese el email"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -338,7 +330,7 @@ export const FamilyRegister = () => {
                 id="phoneNumber"
                 name="phoneNumber"
                 type="tel"
-                placeholder="Ej: +56912345678"
+                placeholder="Ej: +569XXXXXXXX"
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -348,12 +340,12 @@ export const FamilyRegister = () => {
             </div>
           </div>
 
-          {/* Botón de Enviar */}
+          {/* Botón de envío */}
           <div className="sm:col-span-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full rounded-md bg-indigo-600 py-2 px-4 text-white font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className="w-full rounded-md bg-indigo-600 py-2 px-3 text-white font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600"
             >
               {isSubmitting ? 'Registrando...' : 'Registrar Miembro'}
             </button>

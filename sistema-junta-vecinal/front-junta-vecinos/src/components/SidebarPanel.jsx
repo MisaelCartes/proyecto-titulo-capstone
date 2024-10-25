@@ -244,7 +244,7 @@ const SidebarPanel = () => {
                                 </div>
                             )}
                             <NavLink
-                                to="/mapas"
+                                to="/maps"
                                 className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
                                 activeClassName="bg-gray-600"
                             >

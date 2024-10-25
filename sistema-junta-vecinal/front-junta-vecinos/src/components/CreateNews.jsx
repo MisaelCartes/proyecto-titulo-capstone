@@ -1,20 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 export const CreateNews = () => {
+  const { id } = useParams(); // Capturamos el ID desde los params
+  console.log(id);
   const [formData, setFormData] = useState({
-    title: 'Nueva Noticia',
-    description: 'Es una nueva noticia',
-    source: 'Noticia importante...',
-    author: 'Jimmy Huste',
+    title: '',
+    description: '',
+    source: '',
+    author: '',
     publishedAt: '',
     dateVigencia: '',
-    category: 'Informativo',
+    category: '',
   });
   const [imageFile, setImageFile] = useState(null); // Estado separado para la imagen
   const [errors, setErrors] = useState({});
+  const [isEditing, setIsEditing] = useState(false); // Determina si estamos en modo edición o creación
+
+  useEffect(() => {
+    if (id) {
+      setIsEditing(true);
+      // Realizamos el GET para obtener la noticia por su ID
+      axios
+        .get(`http://127.0.0.1:8000/obtener/noticia/${id}`) // Enviar el ID por parámetro
+        .then((response) => {
+          const { title, description, source, author, publishedAt, dateVigencia, category } = response.data;
+          setFormData({
+            title,
+            description,
+            source,
+            author,
+            publishedAt: dayjs(publishedAt).format('YYYY-MM-DDTHH:mm'), // Formato para input type="datetime-local"
+            dateVigencia: dayjs(dateVigencia).format('YYYY-MM-DDTHH:mm'),
+            category,
+          });
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al cargar la noticia',
+            text: 'No se pudo cargar la noticia. Inténtalo más tarde.',
+          });
+        });
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,19 +74,28 @@ export const CreateNews = () => {
     if (imageFile) {
       dataToSend.append('urlToImage', imageFile); // Agregar la imagen al FormData
     }
+    if (isEditing) {
+      dataToSend.append('id', id); // Agregar el id si estamos editando
+    }
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/crear/noticias/', dataToSend, {
+      const endpoint = isEditing
+        ? `http://127.0.0.1:8000/editar/noticia/`
+        : `http://127.0.0.1:8000/crear/noticias/`;
+
+      const response = await axios({
+        method: isEditing ? 'PUT' : 'POST',
+        url: endpoint,
+        data: dataToSend,
         headers: {
-          'Content-Type': 'multipart/form-data', // Asegurarse de que el tipo de contenido sea multipart/form-data
+          'Content-Type': 'multipart/form-data',
         },
       });
 
-      console.log(response.data);
       Swal.fire({
         icon: 'success',
-        title: 'Noticia creada',
-        text: 'La noticia se ha creado exitosamente.',
+        title: isEditing ? 'Noticia editada' : 'Noticia creada',
+        text: `La noticia ha sido ${isEditing ? 'editada' : 'creada'} exitosamente.`,
       });
 
       setFormData({
@@ -70,25 +111,16 @@ export const CreateNews = () => {
     } catch (error) {
       if (error.response && error.response.data) {
         setErrors(error.response.data);
-        // Verificar si el error contiene el mensaje específico
-        if (error.response.data.error === 'Solo se permiten imágenes en formato .jpg, .jpeg o .png.') {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error en el formato de imagen',
-            text: error.response.data.error,
-          });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Hubo un problema al crear la noticia. Por favor, intenta nuevamente.',
-          });
-        }
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.response.data.error || 'Hubo un problema al procesar la solicitud.',
+        });
       } else {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Hubo un problema al crear la noticia. Por favor, intenta nuevamente.',
+          text: 'Hubo un problema al procesar la solicitud. Por favor, intenta nuevamente.',
         });
       }
     }
@@ -98,7 +130,7 @@ export const CreateNews = () => {
     <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8">
       <div className="max-w-3xl rounded-lg p-8 mx-auto bg-gray-800">
         <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
-          Crear una nueva noticia
+          {isEditing ? 'Editar noticia' : 'Crear una nueva noticia'}
         </h2>
         <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
           <div className="sm:col-span-2">
@@ -107,7 +139,7 @@ export const CreateNews = () => {
               id="title"
               name="title"
               type="text"
-              placeholder='Ingrese un titulo'
+              placeholder="Ingrese un titulo"
               value={formData.title}
               onChange={handleChange}
               required
@@ -120,7 +152,7 @@ export const CreateNews = () => {
             <textarea
               id="description"
               name="description"
-              placeholder='Ingrese una descripción'
+              placeholder="Ingrese una descripción"
               rows="4"
               value={formData.description}
               onChange={handleChange}
@@ -134,7 +166,7 @@ export const CreateNews = () => {
             <input
               id="source"
               name="source"
-              placeholder='Ingrese la fuente de la noticia'
+              placeholder="Ingrese la fuente de la noticia"
               type="text"
               value={formData.source}
               onChange={handleChange}
@@ -149,7 +181,7 @@ export const CreateNews = () => {
               id="author"
               name="author"
               type="text"
-              placeholder='Ingrese el nombre del autor'
+              placeholder="Ingrese el nombre del autor"
               value={formData.author}
               onChange={handleChange}
               required
@@ -163,7 +195,7 @@ export const CreateNews = () => {
               id="publishedAt"
               name="publishedAt"
               type="datetime-local"
-              placeholder='Ingrese la fecha de publicación'
+              placeholder="Ingrese la fecha de publicación"
               value={formData.publishedAt}
               onChange={handleChange}
               required
@@ -177,7 +209,7 @@ export const CreateNews = () => {
               id="dateVigencia"
               name="dateVigencia"
               type="datetime-local"
-              placeholder='Ingrese la fecha de vigencia'
+              placeholder="Ingrese la fecha de vigencia"
               value={formData.dateVigencia}
               onChange={handleChange}
               required
@@ -191,7 +223,7 @@ export const CreateNews = () => {
               id="category"
               name="category"
               type="text"
-              placeholder='Ingrese la categoría'
+              placeholder="Ingrese la categoría de la noticia"
               value={formData.category}
               onChange={handleChange}
               required
@@ -199,25 +231,23 @@ export const CreateNews = () => {
             />
             {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
           </div>
-          <div>
-            <label htmlFor="urlToImage" className="block text-sm font-medium text-white">Cargar Imagen</label>
+          <div className="sm:col-span-2">
+            <label htmlFor="urlToImage" className="block text-sm font-medium text-white">Imagen</label>
             <input
               id="urlToImage"
               name="urlToImage"
               type="file"
-              accept="image/*"
               onChange={handleImageChange}
-              required
-              className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white"
+              className="block w-full text-white"
             />
             {errors.urlToImage && <p className="text-red-500 text-xs mt-1">{errors.urlToImage}</p>}
           </div>
           <div className="sm:col-span-2">
             <button
               type="submit"
-              className="w-full rounded-md bg-blue-600 py-2 text-white font-semibold hover:bg-blue-700"
+              className="w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700"
             >
-              Crear Noticia
+              {isEditing ? 'Actualizar Noticia' : 'Crear Noticia'}
             </button>
           </div>
         </form>

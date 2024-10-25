@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';  
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import Swal from 'sweetalert2';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
 
 export const ViewNews = () => {
-    const [articles, setArticles] = useState([]); // Inicializar como array vacío
+    const [articles, setArticles] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
 
@@ -13,7 +14,7 @@ export const ViewNews = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/noticias/');
-                setArticles(response.data); // Asignar los datos de la respuesta
+                setArticles(response.data);
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
@@ -25,6 +26,46 @@ export const ViewNews = () => {
 
         fetchData();
     }, []);
+
+    const getOneArticle = async (id) => {
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/obtener/noticia/', {
+                data: { id }
+            });
+            return response.data;
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al obtener la noticia.',
+            });
+        }
+    };
+
+    const handleDelete = async (id) => {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete('http://127.0.0.1:8000/eliminar/noticia/', {
+                        data: { id }
+                    });
+                    Swal.fire('¡Eliminado!', 'La noticia ha sido eliminada.', 'success');
+                    setArticles(articles.filter(article => article.id !== id));
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar la noticia', 'error');
+                }
+            }
+        });
+    };
 
     const openModal = (article) => {
         setSelectedArticle(article);
@@ -65,7 +106,23 @@ export const ViewNews = () => {
                                 <p className="text-gray-600 mt-2">
                                     {truncateDescription(article.description)}
                                 </p>
-                                <div className="flex justify-end mt-4">
+                                <div className="flex justify-between items-center mt-4">
+                                    <div className="flex items-center space-x-4">
+                                        <NavLink
+                                            to={`/noticias/${article.id}/edit`}
+                                            title="Editar"
+                                            className="text-green-500 hover:text-green-400 transition-colors duration-300"
+                                        >
+                                            <FaEdit className="h-6 w-6" />
+                                        </NavLink>
+                                        <button
+                                            onClick={() => handleDelete(article.id)}
+                                            title="Eliminar"
+                                            className="text-red-600 hover:text-red-500 transition-colors duration-300"
+                                        >
+                                            <FaTrash className="h-6 w-6" />
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={() => openModal(article)}
                                         className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
@@ -81,9 +138,10 @@ export const ViewNews = () => {
                 )}
             </div>
 
-            <Modal 
-                isOpen={modalIsOpen} 
-                onRequestClose={closeModal} 
+
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={closeModal}
                 ariaHideApp={false}
                 className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-2xl relative mt-16 outline-none"
                 overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
@@ -92,8 +150,8 @@ export const ViewNews = () => {
                     content: { maxHeight: '85vh', overflowY: 'auto' }
                 }}
             >
-                <button 
-                    onClick={closeModal} 
+                <button
+                    onClick={closeModal}
                     className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition duration-300"
                 >
                     <FaTimes size={24} />
@@ -108,7 +166,7 @@ export const ViewNews = () => {
                             <span>•</span>
                             <p><b>{selectedArticle.category}</b></p>
                         </div>
-                        <img 
+                        <img
                             src={`http://localhost:8000/${selectedArticle.urlToImage}`}
                             alt={selectedArticle.title}
                             className="w-full h-64 object-cover rounded-lg shadow-md"

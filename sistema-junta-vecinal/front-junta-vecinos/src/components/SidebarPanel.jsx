@@ -9,6 +9,7 @@ import { CreateNews } from './CreateNews';
 import CreateCertificationFrom from './CreateCertificationFrom';
 import CertificadoStatus from './CertificadoStatus';
 import { FamilyRegister } from './FamilyRegister';
+import MapaInteractive from './MapaInteractive';
 
 
 
@@ -24,6 +25,7 @@ const SidebarPanel = () => {
     const [viewCreateCertification, setViewCreateCertification] = useState(false);
     const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false);
     const [viewFamilyRegister, setViewFamilyRegister] = useState(false);
+    const [viewMapa, setViewMapa] = useState(false); 
     const navigate = useNavigate();
     const [rut, setRut] = useState(null);
 
@@ -74,6 +76,7 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
     const handleNewsClick = () => {
@@ -84,6 +87,7 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
     const handleCreateNewsClick = () => {
@@ -94,6 +98,7 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
     const handleCreateCertificationClick = () => {
@@ -104,6 +109,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
     const handleCertificadoStatusClick = () => {
@@ -114,6 +120,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCreateCertification(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
     const handleFamilyRegisterClick = () => {
@@ -124,6 +131,7 @@ const SidebarPanel = () => {
         setViewCreateNews(false);
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
+        setViewMapa(false);
     };
 
     const handleBackClick = () => {
@@ -134,8 +142,19 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
+    const handleMapaClick = () => {
+        setViewMapa(true); // Activa el mapa
+        setViewUser(false);
+        setViewDashboard(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
+    };
     return (
         <div className="flex">
             {/* Menú Plegable */}
@@ -243,14 +262,13 @@ const SidebarPanel = () => {
                                     </div>
                                 </div>
                             )}
-                            <NavLink
-                                to="/maps"
-                                className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
+                            <div
+                                className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center" onClick={handleMapaClick}
                                 activeClassName="bg-gray-600"
                             >
                                 <FaMap className="mr-2" />
                                 <span>Mapas</span>
-                            </NavLink>
+                            </div>
                         </>
                     )}
                 </div>
@@ -310,6 +328,8 @@ const SidebarPanel = () => {
                     <CertificadoStatus onBackClick={handleBackClick} />
                 ) : viewFamilyRegister ? (
                     <FamilyRegister onBackClick={handleBackClick} />
+                ) :  viewMapa ? (
+                    <MapaInteractive onBackClick={handleBackClick}/> 
                 ) : null}
 
             </div>

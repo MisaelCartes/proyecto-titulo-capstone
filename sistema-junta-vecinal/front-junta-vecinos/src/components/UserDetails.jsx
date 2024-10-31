@@ -9,13 +9,16 @@ export const UserDetails = () => {
     const { rut } = useParams(); // Obtener el rut de los parámetros de la URL
     const [user, setUser] = useState(null); // Estado para almacenar los detalles del usuario
     const navigate = useNavigate(); // Para redirigir
-    console.log(rut)
+    const token = localStorage.getItem('token');
+
     // Función para cargar los detalles del usuario desde la API
     const fetchUserDetails = () => {
         fetch(`${BASE_URL}/user/list/one/?rut=${rut}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                // Agregar token aquí si es necesario para la autenticación
+                'Authorization': `Bearer ${token}`
             },
         })
             .then(response => {
@@ -36,20 +39,20 @@ export const UserDetails = () => {
 
     // Verificar el token y el rol del usuario
     useEffect(() => {
-        const accessToken = localStorage.getItem('token');
-        if (accessToken) {
+        if (token) {
             try {
-                const decodedToken = jwtDecode(accessToken);
+                const decodedToken = jwtDecode(token);
                 const { exp, rol } = decodedToken;
                 if (exp * 1000 < Date.now()) {
                     localStorage.removeItem('token');
                     navigate('/login');
                 } else {
+                    // Verificar el rol
                     if (rol !== '1' && rol !== '2') {
                         Swal.fire('Acceso Denegado', 'No tienes permiso para ver estos detalles.', 'warning');
                         navigate('/login');
                     } else {
-                        fetchUserDetails();
+                        fetchUserDetails(); // Solo llamar a esta función si el rol es permitido
                     }
                 }
             } catch (error) {
@@ -60,10 +63,6 @@ export const UserDetails = () => {
             navigate('/login');
         }
     }, [navigate, rut]);
-
-    if (!user) {
-        return <div className="text-white">Cargando...</div>;
-    }
 
     return (
         <div className="container mx-auto px-4 py-8">

@@ -25,17 +25,20 @@ const SidebarPanel = () => {
     const [viewCreateCertification, setViewCreateCertification] = useState(false);
     const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false);
     const [viewFamilyRegister, setViewFamilyRegister] = useState(false);
-    const [viewMapa, setViewMapa] = useState(false); 
+    const [viewMapa, setViewMapa] = useState(false);
     const navigate = useNavigate();
     const [rut, setRut] = useState(null);
+    const [rol, setRole] = useState(null);
 
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
         if (accessToken) {
             try {
                 const decodedToken = jwtDecode(accessToken);
-                const { exp, rut } = decodedToken;
+                const { exp, rut, rol } = decodedToken; 
                 setRut(rut);
+                setRole(rol);
+                console.log(rol)
 
                 if (exp * 1000 < Date.now()) {
                     localStorage.removeItem('token');
@@ -182,23 +185,29 @@ const SidebarPanel = () => {
                 <div className="mt-10 flex-grow overflow-y-auto">
                     {isOpen && (
                         <>
-                            <NavLink
-                                to="/panel"
-                                className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
-                                activeClassName="bg-gray-600"
-                                onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); setViewCreateNews(false); setViewCreateCertification(false); setViewCertificadoStatus(false); setViewFamilyRegister(false); }}
-                            >
-                                <FaTachometerAlt className="mr-2" />
-                                <span>Dashboard</span>
-                            </NavLink>
-                            <div
-                                className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
-                                onClick={toggleUsuarios}
-                            >
-                                <FaUser className="mr-2" />
-                                <span>Usuarios</span>
-                            </div>
-                            {showUsuarios && (
+                            {rol === "1" && (
+                                <NavLink
+                                    to="/panel"
+                                    className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
+                                    activeClassName="bg-gray-600"
+                                    onClick={() => { setViewDashboard(true); setViewUser(false); setViewNews(false); setViewCreateNews(false); setViewCreateCertification(false); setViewCertificadoStatus(false); setViewFamilyRegister(false); }}
+                                >
+                                    <FaTachometerAlt className="mr-2" />
+                                    <span>Dashboard</span>
+                                </NavLink>
+                            )}
+
+                            {rol === "1" && (
+                                <div
+                                    className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                    onClick={toggleUsuarios}
+                                >
+                                    <FaUser className="mr-2" />
+                                    <span>Usuarios</span>
+                                </div>
+                            )}
+
+                            {rol === "1" && showUsuarios && (
                                 <div className="pl-4">
                                     <div
                                         className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
@@ -217,6 +226,7 @@ const SidebarPanel = () => {
                                     </div>
                                 </div>
                             )}
+
                             <div className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer" onClick={toggleCertificados}>
                                 <FaFileAlt className="mr-2" />
                                 <span>Certificados</span>
@@ -246,13 +256,15 @@ const SidebarPanel = () => {
                             </div>
                             {showReservas && (
                                 <div className="pl-4">
-                                    <div
-                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
-                                        onClick={handleCreateNewsClick}
-                                    >
-                                        <FaPaperPlane className="mr-2" />
-                                        <span>Publicar Noticia</span>
-                                    </div>
+                                    {rol === "1" && (
+                                        <div
+                                            className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                            onClick={handleCreateNewsClick}
+                                        >
+                                            <FaPaperPlane className="mr-2" />
+                                            <span>Publicar Noticia</span>
+                                        </div>
+                                    )}
                                     <div
                                         className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                         onClick={handleNewsClick}
@@ -262,13 +274,17 @@ const SidebarPanel = () => {
                                     </div>
                                 </div>
                             )}
-                            <div
-                                className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center" onClick={handleMapaClick}
-                                activeClassName="bg-gray-600"
-                            >
-                                <FaMap className="mr-2" />
-                                <span>Mapas</span>
-                            </div>
+
+                            {rol === "1" && (
+                                <div
+                                    className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
+                                    onClick={handleMapaClick}
+                                    activeClassName="bg-gray-600"
+                                >
+                                    <FaMap className="mr-2" />
+                                    <span>Mapas</span>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -314,24 +330,24 @@ const SidebarPanel = () => {
                     />
                 </div>
 
-                {viewUser ? (
+                {/* Renderizado condicional de componentes */}
+                {viewUser && rol === "1" ? (
                     <ViewUser onBackClick={handleBackClick} />
-                ) : viewDashboard ? (
+                ) : viewDashboard && rol === "1" ? (
                     <Dashboard />
                 ) : viewNews ? (
                     <ViewNews onBackClick={handleBackClick} />
-                ) : viewCreateNews ? (
+                ) : viewCreateNews && rol === "1" ? (
                     <CreateNews />
                 ) : viewCreateCertification ? (
                     <CreateCertificationFrom onBackClick={handleBackClick} />
                 ) : viewCertificadoStatus ? (
                     <CertificadoStatus onBackClick={handleBackClick} />
-                ) : viewFamilyRegister ? (
+                ) : viewFamilyRegister && rol === "1" ? (
                     <FamilyRegister onBackClick={handleBackClick} />
-                ) :  viewMapa ? (
-                    <MapaInteractive onBackClick={handleBackClick}/> 
+                ) : viewMapa && rol === "1" ? (
+                    <MapaInteractive onBackClick={handleBackClick} />
                 ) : null}
-
             </div>
         </div>
     );

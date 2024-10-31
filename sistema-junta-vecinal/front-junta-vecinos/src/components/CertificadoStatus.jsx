@@ -1,83 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2'; // Importar SweetAlert2
-
-// Simulación del JSON de solicitudes
-const requestsData = [
-    {
-        requestNumber: "SOL001",
-        requestName: "Certificado de Nacimiento",
-        requestDate: "2024-01-15",
-        status: "En Proceso",
-        rut: "12.345.678-9",
-        fullName: "Juan Pérez González",
-        creationDate: "2024-01-10",
-        notes: "Solicitud urgente"
-    },
-    {
-        requestNumber: "SOL002",
-        requestName: "Certificado de Residencia",
-        requestDate: "2024-02-20",
-        status: "Aprobado",
-        rut: "98.765.432-1",
-        fullName: "Ana María López",
-        creationDate: "2024-02-15",
-        notes: ""
-    },
-    {
-        requestNumber: "SOL003",
-        requestName: "Certificado de Matrimonio",
-        requestDate: "2024-03-05",
-        status: "Rechazado",
-        rut: "11.222.333-4",
-        fullName: "Carlos Fernández",
-        creationDate: "2024-02-28",
-        notes: "Falta documentación"
-    },
-    {
-        requestNumber: "SOL004",
-        requestName: "Certificado de Antecedentes",
-        requestDate: "2024-04-10",
-        status: "Completado",
-        rut: "44.555.666-7",
-        fullName: "María García",
-        creationDate: "2024-04-01",
-        notes: ""
-    },
-    {
-        requestNumber: "SOL005",
-        requestName: "Certificado de Defunción",
-        requestDate: "2024-05-25",
-        status: "En Proceso",
-        rut: "33.444.555-6",
-        fullName: "Pedro González",
-        creationDate: "2024-05-20",
-        notes: "Caso delicado"
-    }
-];
+import axios from 'axios'; // Importar Axios
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { jwtDecode } from 'jwt-decode'; // Importar jwtDecode
 
 const CertificadoStatus = () => {
-    const [requests, setRequests] = useState([]);
+    const navigate = useNavigate();
+    const [requests, setRequests] = useState([]); // Initialize with an empty array
+    const [loading, setLoading] = useState(true);
 
-    // Función para cargar las solicitudes (simulando una API)
-    const fetchRequests = () => {
-        // Simulando una llamada a la API
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(requestsData);
-            }, 1000);
-        });
+    // Función para cargar las solicitudes desde el archivo JSON
+    const fetchRequests = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No hay token');
+        }
+
+        try {
+            const decodedToken = jwtDecode(token);
+            const { rol } = decodedToken; // Obtener el rol del token
+
+            // Verificar si el rol es diferente de 1 o 2
+            if (rol !== "1" && rol !== "2") {
+                Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a esta página.', 'error');
+                navigate('/panel'); // Redirigir a otra página si no tiene acceso
+                return;
+            }
+
+            // Hacer la solicitud para obtener datos desde el archivo JSON
+            const response = await axios.get('http://127.0.0.1:8000/'); 
+            return response.data; // Asegúrate que esto devuelva un array
+        } catch (error) {
+            console.error('Error al obtener solicitudes:', error);
+            throw error;
+        }
     };
 
     useEffect(() => {
         // Cargar solicitudes cuando el componente se monta
         fetchRequests()
             .then(data => {
-                setRequests(data);
+                if (Array.isArray(data)) {
+                    setRequests(data);
+                } else {
+                    throw new Error('Datos no son un array');
+                }
+                setLoading(false);
             })
             .catch(() => {
                 Swal.fire('Error', 'No se pudo cargar la lista de solicitudes.', 'error');
+                setLoading(false);
             });
     }, []);
+
+    if (loading) {
+        return <div>Cargando...</div>; // Display loading state
+    }
 
     return (
         <div className="mx-auto w-12/13 px-4 mt-8">

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const CreateCertificationFrom = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         rut: '',
         nombres: '',
@@ -14,6 +17,30 @@ const CreateCertificationFrom = () => {
         urlToImage: '',
     });
     const [errors, setErrors] = useState({});
+    const [role, setRole] = useState(null); // Estado para el rol
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                const { rol } = decodedToken; // Obtener el rol del token
+                setRole(rol);
+
+                // Verificar si el rol es diferente de 1 o 2
+                if (rol !== "1" && rol !== "2") {
+                    Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a esta página.', 'error');
+                    navigate('/panel'); // Redirigir a otra página si no tiene acceso
+                }
+            } catch (error) {
+                console.error('Error decodificando el token:', error);
+                navigate('/login'); // Redirigir a la página de login si hay un error
+            }
+        } else {
+            navigate('/login'); // Redirigir a la página de login si no hay token
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -29,6 +56,7 @@ const CreateCertificationFrom = () => {
             await axios.post('http://127.0.0.1:8000/create/certification', formData, {
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, // Incluir el token en los headers
                 },
             });
 

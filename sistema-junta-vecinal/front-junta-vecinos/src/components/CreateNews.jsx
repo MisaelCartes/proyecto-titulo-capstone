@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { jwtDecode } from 'jwt-decode';
 
 export const CreateNews = () => {
   const { id } = useParams(); // Capturamos el ID desde los params
-  console.log(id);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -16,16 +17,46 @@ export const CreateNews = () => {
     dateVigencia: '',
     category: '',
   });
+  const token = localStorage.getItem('token');
   const [imageFile, setImageFile] = useState(null); // Estado separado para la imagen
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false); // Determina si estamos en modo edición o creación
+  const [rol, setRol] = useState(null); // Estado para el rol
+
+  // Función para verificar el rol del usuario
+  const checkUserRole = () => {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const { rol } = decodedToken; // Obtener el rol del token
+        setRol(rol);
+        // Verificar si el rol es diferente de admin (asumiendo que el rol admin es 1)
+        if (rol !== "1") {
+          Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a esta página.', 'error');
+          navigate('/panel'); // Redirigir a otra página si no es admin
+        }
+      } catch (error) {
+        console.error('Error decodificando el token:', error);
+        navigate('/login'); // Redirigir a la página de login si hay un error
+      }
+    } else {
+      navigate('/login'); // Redirigir a la página de login si no hay token
+    }
+  };
 
   useEffect(() => {
+    checkUserRole(); // Verificamos el rol del usuario al cargar el componente
+
     if (id) {
       setIsEditing(true);
       // Realizamos el GET para obtener la noticia por su ID
       axios
-        .get(`http://127.0.0.1:8000/obtener/noticia/${id}`) // Enviar el ID por parámetro
+        .get(`http://127.0.0.1:8000/obtener/noticia/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }, 
+          params: { id } 
+        })
         .then((response) => {
           const { title, description, source, author, publishedAt, dateVigencia, category } = response.data;
           setFormData({
@@ -89,6 +120,7 @@ export const CreateNews = () => {
         data: dataToSend,
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}` // Agregar el token en el header
         },
       });
 

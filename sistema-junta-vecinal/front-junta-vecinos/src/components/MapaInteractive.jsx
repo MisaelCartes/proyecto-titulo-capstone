@@ -1,7 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState} from 'react';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'; 
+import Swal from 'sweetalert2';
 
 // Configuración del mapa
 const mapContainerStyle = {
@@ -38,17 +41,45 @@ const usersData = [
 ];
 
 // Componente del Mapa
-const MapaInteractive = () => {
-  const [selectedUser, setSelectedUser] = useState(null);
+  const MapaInteractive = () => {
+    const [selectedUser, setSelectedUser] = useState(null);
+    const navigate = useNavigate();
 
-  const onMarkerClick = useCallback((user) => {
-    setSelectedUser(user);
-  }, []);
+    // Verificar el token y el rol del usuario
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                const { exp, rol } = decodedToken;
+                if (exp * 1000 < Date.now()) {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                } else {
+                    // Verificar el rol
+                    if (rol !== '1' && rol !== '2') {
+                        Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a este mapa.', 'warning');
+                        navigate('/panel');
+                    }
+                }
+            } catch (error) {
+                console.error('Error decodificando el token:', error);
+                navigate('/login');
+            }
+        } else {
+            navigate('/login');
+        }
+    }, [navigate]);
 
-  const onCloseClick = () => {
-    setSelectedUser(null);
-  };
- 
+    const onMarkerClick = useCallback((user) => {
+        setSelectedUser(user);
+    }, []);
+
+    const onCloseClick = () => {
+        setSelectedUser(null);
+    };
+
+
   return (
     <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
       <div className="p-4 mt-2">

@@ -172,9 +172,9 @@ export default function LandingPage() {
           </div>
           <div className="mt-20 grid grid-cols-1 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 md:max-w-none">
             {[
-              { title: "Solicitud de Certificado", link: "/certificados/solicitar", icon: "M3 7v2a2 2 0 002 2h10a2 2 0 002-2V7m-1 4h-6m-6 0H5m4-4H5" },
-              { title: "Actualización de Datos", link: "/actualizacion-datos", icon: "M4 6h16M4 12h16M4 18h16" },
-              { title: "Edición de Mi Perfil", link: "/actualizacion-datos", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" }
+              { title: "Solicitud de Certificado", link: "/panel", icon: "M3 7v2a2 2 0 002 2h10a2 2 0 002-2V7m-1 4h-6m-6 0H5m4-4H5" },
+              { title: "Edición de Mi Perfil", link: "/panel", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
+              { title: "Consultar Estado Solicitud", link: "/panel", icon: "M9 12h6m-6 4h6m-2-8h.01M6 6h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z" }
             ].map((item, index) => (
               <div key={index} className="relative flex flex-col gap-6 p-6 border border-gray-700 rounded-lg bg-gray-800 mx-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white">
@@ -211,8 +211,8 @@ export default function LandingPage() {
 
 
       {/* Footer */}
-      <div>
-        <Footer/>
+      <div id='footer'>
+        <Footer />
       </div>
     </div>
   )

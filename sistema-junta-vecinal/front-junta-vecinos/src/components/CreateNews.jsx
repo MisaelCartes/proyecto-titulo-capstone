@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { jwtDecode } from 'jwt-decode';
 
 export const CreateNews = () => {
-  const { id } = useParams(); // Capturamos el ID desde los params
+  const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
@@ -17,55 +17,61 @@ export const CreateNews = () => {
     dateVigencia: '',
     category: '',
   });
-  const token = localStorage.getItem('token');
-  const [imageFile, setImageFile] = useState(null); // Estado separado para la imagen
-  const [errors, setErrors] = useState({});
-  const [isEditing, setIsEditing] = useState(false); // Determina si estamos en modo edición o creación
-  const [rol, setRol] = useState(null); // Estado para el rol
 
-  // Función para verificar el rol del usuario
+  const handleBack = () => {
+    // Navegar a la página anterior
+    navigate(-1);
+  };
+  const token = localStorage.getItem('token');
+  const [imageFile, setImageFile] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [rol, setRol] = useState(null);
+
   const checkUserRole = () => {
     const token = localStorage.getItem('token');
 
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        const { rol } = decodedToken; // Obtener el rol del token
+        const { rol } = decodedToken;
         setRol(rol);
-        // Verificar si el rol es diferente de admin (asumiendo que el rol admin es 1)
         if (rol !== "1") {
           Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a esta página.', 'error');
-          navigate('/panel'); // Redirigir a otra página si no es admin
+          navigate('/panel');
         }
       } catch (error) {
         console.error('Error decodificando el token:', error);
-        navigate('/login'); // Redirigir a la página de login si hay un error
+        navigate('/login');
       }
     } else {
-      navigate('/login'); // Redirigir a la página de login si no hay token
+      navigate('/login');
     }
   };
 
   useEffect(() => {
-    checkUserRole(); // Verificamos el rol del usuario al cargar el componente
+    checkUserRole();
 
     if (id) {
       setIsEditing(true);
-      // Realizamos el GET para obtener la noticia por su ID
       axios
-        .get(`http://127.0.0.1:8000/obtener/noticia/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }, 
-          params: { id } 
+        .get(`http://127.0.0.1:8000/obtener/noticia/`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id }
         })
         .then((response) => {
           const { title, description, source, author, publishedAt, dateVigencia, category } = response.data;
+          // Formatear las fechas para el input datetime-local
+          const formattedPublishedAt = dayjs(publishedAt).format('YYYY-MM-DDTHH:mm');
+          const formattedDateVigencia = dayjs(dateVigencia).format('YYYY-MM-DDTHH:mm');
+
           setFormData({
             title,
             description,
             source,
             author,
-            publishedAt: dayjs(publishedAt).format('YYYY-MM-DDTHH:mm'), // Formato para input type="datetime-local"
-            dateVigencia: dayjs(dateVigencia).format('YYYY-MM-DDTHH:mm'),
+            publishedAt: formattedPublishedAt,
+            dateVigencia: formattedDateVigencia,
             category,
           });
         })
@@ -86,27 +92,45 @@ export const CreateNews = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImageFile(file); // Guardar el archivo en el estado
+    setImageFile(file);
+  };
+
+  // Función para el formato de edición
+  const formatDateForAPIEdit = (dateString) => {
+    const date = dayjs(dateString);
+    return date.format('YYYY-MM-DDTHH:mm:ss'); // Formato para edición
+  };
+
+  // Función para el formato de creación
+  const formatDateForAPICreate = (dateString) => {
+    const date = dayjs(dateString);
+    return date.format('YYYY-MM-DD HH:mm'); // Formato para creación
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
 
-    // Crear un FormData para manejar el envío de datos y archivos
     const dataToSend = new FormData();
     dataToSend.append('title', formData.title);
     dataToSend.append('description', formData.description);
     dataToSend.append('source', formData.source);
     dataToSend.append('author', formData.author);
-    dataToSend.append('publishedAt', dayjs(formData.publishedAt).format('YYYY-MM-DD HH:mm'));
-    dataToSend.append('dateVigencia', dayjs(formData.dateVigencia).format('YYYY-MM-DD HH:mm'));
+
+    // Usar el formato según el caso (edición o creación)
+    if (isEditing) {
+      dataToSend.append('publishedAt', formatDateForAPIEdit(formData.publishedAt));
+      dataToSend.append('dateVigencia', formatDateForAPIEdit(formData.dateVigencia));
+    } else {
+      dataToSend.append('publishedAt', formatDateForAPICreate(formData.publishedAt));
+      dataToSend.append('dateVigencia', formatDateForAPICreate(formData.dateVigencia));
+    }
     dataToSend.append('category', formData.category);
     if (imageFile) {
-      dataToSend.append('urlToImage', imageFile); // Agregar la imagen al FormData
+      dataToSend.append('urlToImage', imageFile);
     }
     if (isEditing) {
-      dataToSend.append('id', id); // Agregar el id si estamos editando
+      dataToSend.append('id', id);
     }
 
     try {
@@ -120,7 +144,7 @@ export const CreateNews = () => {
         data: dataToSend,
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}` // Agregar el token en el header
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -130,16 +154,8 @@ export const CreateNews = () => {
         text: `La noticia ha sido ${isEditing ? 'editada' : 'creada'} exitosamente.`,
       });
 
-      setFormData({
-        title: '',
-        description: '',
-        source: '',
-        author: '',
-        publishedAt: '',
-        dateVigencia: '',
-        category: '',
-      });
-      setImageFile(null);
+      navigate('/panel'); // Redirigir después de crear/editar exitosamente
+
     } catch (error) {
       if (error.response && error.response.data) {
         setErrors(error.response.data);
@@ -164,6 +180,20 @@ export const CreateNews = () => {
         <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
           {isEditing ? 'Editar noticia' : 'Crear una nueva noticia'}
         </h2>
+        
+        {/* Botón de Volver */}
+        {isEditing && (
+          <div className="mb-4 text-left">
+          <button
+            onClick={handleBack}
+            className="rounded-md bg-blue-800 py-2 px-4 text-white hover:bg-blue-900"
+          >
+            Volver
+          </button>
+        </div>
+        )}
+
+
         <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
           <div className="sm:col-span-2">
             <label htmlFor="title" className="block text-sm font-medium text-white">Título</label>
@@ -227,7 +257,7 @@ export const CreateNews = () => {
               id="publishedAt"
               name="publishedAt"
               type="datetime-local"
-              placeholder="Ingrese la fecha de publicación"
+              step="1"
               value={formData.publishedAt}
               onChange={handleChange}
               required
@@ -241,7 +271,7 @@ export const CreateNews = () => {
               id="dateVigencia"
               name="dateVigencia"
               type="datetime-local"
-              placeholder="Ingrese la fecha de vigencia"
+              step="1"
               value={formData.dateVigencia}
               onChange={handleChange}
               required
@@ -285,5 +315,6 @@ export const CreateNews = () => {
         </form>
       </div>
     </div>
+
   );
 };

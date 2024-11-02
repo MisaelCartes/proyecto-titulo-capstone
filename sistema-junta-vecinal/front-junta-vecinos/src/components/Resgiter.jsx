@@ -11,17 +11,17 @@ const isValidChileanPhoneNumber = (phone) => /^9\d{8}$/.test(phone);
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: 'Jimmy Huste',
-    lastName: 'Exantus',
+    firstName: '',
+    lastName: '',
     motherLastName: '',
-    rut: '37560106-0',
-    address: 'Santiago 123',
-    password: '123456',
-    phoneNumber: '987654321', 
-    email: 'jimmy@gmail.com',
+    rut: '',
+    address: '',
+    password: '',
+    phoneNumber: '', 
+    email: '',
     role: 'MEMBER',
     photo: null,
-    housingType: 'Casa',
+    housingType: '',
   });
 
   const [errors, setErrors] = useState({}); // Para almacenar errores de validación

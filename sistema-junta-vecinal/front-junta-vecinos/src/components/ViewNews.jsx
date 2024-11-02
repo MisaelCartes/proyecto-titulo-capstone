@@ -3,12 +3,52 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import Swal from 'sweetalert2';
 import { FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
 
 export const ViewNews = () => {
     const [articles, setArticles] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+    const navigate = useNavigate();
+
+    const validateToken = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return false;
+        }
+        try {
+            const decodedToken = jwtDecode(token);
+            const currentTime = Date.now() / 1000;
+            return decodedToken && decodedToken.exp > currentTime;
+        } catch {
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/');
+            return;
+        }
+
+        try {
+            const decodedToken = jwtDecode(token);
+            if (!decodedToken || !validateToken()) {
+                localStorage.removeItem('token');
+                navigate('/');
+                return;
+            }
+            setUserRole(decodedToken.rol);
+        } catch (error) {
+            console.error('Error al decodificar el token:', error);
+            localStorage.removeItem('token');
+            Swal.fire('Error', 'No se pudo verificar el token.', 'error');
+            navigate('/');
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -27,22 +67,14 @@ export const ViewNews = () => {
         fetchData();
     }, []);
 
-    const getOneArticle = async (id) => {
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/obtener/noticia/', {
-                data: { id }
-            });
-            return response.data;
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al obtener la noticia.',
-            });
-        }
-    };
 
     const handleDelete = async (id) => {
+        if (!validateToken() || userRole !== "1") {
+            Swal.fire('Error', 'No tienes permisos para realizar esta acción', 'error');
+            navigate('/');
+            return;
+        }
+
         Swal.fire({
             title: '¿Estás seguro?',
             text: "Esta acción no se puede deshacer",
@@ -55,13 +87,22 @@ export const ViewNews = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
+                    const token = localStorage.getItem('token');
+                    if (!token) throw new Error('No token available');
+
                     await axios.delete('http://127.0.0.1:8000/eliminar/noticia/', {
+                        headers: { Authorization: `Bearer ${token}` },
                         data: { id }
                     });
                     Swal.fire('¡Eliminado!', 'La noticia ha sido eliminada.', 'success');
                     setArticles(articles.filter(article => article.id !== id));
                 } catch (error) {
-                    Swal.fire('Error', 'No se pudo eliminar la noticia', 'error');
+                    if (error.response?.status === 401 || error.response?.status === 403) {
+                        Swal.fire('Error', 'No tienes permisos para realizar esta acción', 'error');
+                        navigate('/');
+                    } else {
+                        Swal.fire('Error', 'No se pudo eliminar la noticia', 'error');
+                    }
                 }
             }
         });
@@ -108,20 +149,24 @@ export const ViewNews = () => {
                                 </p>
                                 <div className="flex justify-between items-center mt-4">
                                     <div className="flex items-center space-x-4">
-                                        <NavLink
-                                            to={`/noticias/${article.id}/edit`}
-                                            title="Editar"
-                                            className="text-green-500 hover:text-green-400 transition-colors duration-300"
-                                        >
-                                            <FaEdit className="h-6 w-6" />
-                                        </NavLink>
-                                        <button
-                                            onClick={() => handleDelete(article.id)}
-                                            title="Eliminar"
-                                            className="text-red-600 hover:text-red-500 transition-colors duration-300"
-                                        >
-                                            <FaTrash className="h-6 w-6" />
-                                        </button>
+                                        {userRole === "1" && validateToken() && (
+                                            <>
+                                                <NavLink
+                                                    to={`/noticias/${article.id}/edit`}
+                                                    title="Editar"
+                                                    className="text-green-500 hover:text-green-400 transition-colors duration-300"
+                                                >
+                                                    <FaEdit className="h-6 w-6" />
+                                                </NavLink>
+                                                <button
+                                                    onClick={() => handleDelete(article.id)}
+                                                    title="Eliminar"
+                                                    className="text-red-600 hover:text-red-500 transition-colors duration-300"
+                                                >
+                                                    <FaTrash className="h-6 w-6" />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                     <button
                                         onClick={() => openModal(article)}
@@ -137,7 +182,6 @@ export const ViewNews = () => {
                     <p className="text-center text-gray-500">No hay noticias disponibles.</p>
                 )}
             </div>
-
 
             <Modal
                 isOpen={modalIsOpen}

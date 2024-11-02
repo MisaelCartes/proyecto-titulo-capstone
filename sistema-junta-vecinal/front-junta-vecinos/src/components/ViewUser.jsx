@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import { jwtDecode } from 'jwt-decode';
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
+
 
 const BASE_URL = 'http://127.0.0.1:8000';
 
 const ViewUser = () => {
     const [users, setUsers] = useState([]);
-    const [role, setRole] = useState(null);
-    const navigate = useNavigate();
     const token = localStorage.getItem('token');
-
+    useValidateRoleAndAccessToken(["1"], '/panel')
     const fetchUsers = () => {
         fetch(`${BASE_URL}/users/list/`, {
             method: 'GET',
@@ -39,41 +38,8 @@ const ViewUser = () => {
             });
     };
 
-    const checkUserRole = () => {
-        if (token) {
-            try {
-                const decodedToken = jwtDecode(token);
-                console.log('Token decodificado:', decodedToken);
-                
-                // Extraemos el rol y nos aseguramos de que sea un número
-                const userRole = decodedToken.rol;
-                console.log('Rol del usuario:', userRole, typeof userRole);
-                
-                setRole(userRole);
-
-                // Convertimos a número y comparamos
-                // El rol puede venir como string o número
-                if (Number(userRole) === 1 || userRole === '1') {
-                    console.log('Usuario es admin, cargando datos...');
-                    fetchUsers();
-                } else {
-                    console.log('Usuario no es admin, rol:', userRole);
-                    Swal.fire('Acceso Denegado', 'No tienes permiso para ver esta página.', 'error');
-                    navigate('/panel');
-                }
-            } catch (error) {
-                console.error('Error al decodificar el token:', error);
-                Swal.fire('Error', 'Error al verificar tus credenciales.', 'error');
-                navigate('/login');
-            }
-        } else {
-            console.log('No hay token disponible');
-            navigate('/login');
-        }
-    };
-
     useEffect(() => {
-        checkUserRole();
+        fetchUsers();
     }, []);
 
     const handleDelete = (rut) => {

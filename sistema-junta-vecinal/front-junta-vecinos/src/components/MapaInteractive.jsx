@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useState} from 'react';
-import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import React, { useCallback, useState, useEffect } from 'react';
+import { GoogleMap, useLoadScript, MarkerF } from '@react-google-maps/api';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; 
-import Swal from 'sweetalert2';
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 
-// Configuración del mapa
 const mapContainerStyle = {
   height: "75vh",
   width: "100%",
@@ -16,7 +13,6 @@ const center = {
   lat: -33.4523,
   lng: -70.7566,
 };
-
 const usersData = [
   { id: 1, name: "Juan Pérez", address: "Av. San Pablo 8444, Pudahuel, Chile", lat: -33.4440, lng: -70.7669, info: "Vecino del sector San Pablo", rut: "12.345.678-9" },
   { id: 2, name: "María González", address: "Av. Teniente Cruz 750, Pudahuel, Chile", lat: -33.4539, lng: -70.7489, info: "Vecino del sector Teniente Cruz", rut: "23.456.789-0" },
@@ -40,95 +36,97 @@ const usersData = [
   { id: 20, name: "María José López", address: "Av. La Libertad 2000, Pudahuel, Chile", lat: -33.4620, lng: -70.7490, info: "Vecino del sector La Libertad", rut: "01.234.567-8" }
 ];
 
-// Componente del Mapa
-  const MapaInteractive = () => {
-    const [selectedUser, setSelectedUser] = useState(null);
-    const navigate = useNavigate();
+const libraries = ['places'];
 
-    // Verificar el token y el rol del usuario
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const decodedToken = jwtDecode(token);
-                const { exp, rol } = decodedToken;
-                if (exp * 1000 < Date.now()) {
-                    localStorage.removeItem('token');
-                    navigate('/login');
-                } else {
-                    // Verificar el rol
-                    if (rol !== '1' && rol !== '2') {
-                        Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a este mapa.', 'warning');
-                        navigate('/panel');
-                    }
-                }
-            } catch (error) {
-                console.error('Error decodificando el token:', error);
-                navigate('/login');
-            }
-        } else {
-            navigate('/login');
-        }
-    }, [navigate]);
+const MapaInteractive = () => {
+  useValidateRoleAndAccessToken(['1'], '/login');
+  
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
 
-    const onMarkerClick = useCallback((user) => {
-        setSelectedUser(user);
-    }, []);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [map, setMap] = useState(null);
 
-    const onCloseClick = () => {
-        setSelectedUser(null);
-    };
+  const onMarkerClick = useCallback((user) => {
+    setSelectedUser(user);
+  }, []);
 
+  const onCloseClick = () => {
+    setSelectedUser(null);
+  };
+
+  const handleMapLoad = useCallback((map) => {
+    setMap(map);
+  }, []);
+
+  if (loadError) {
+    return (
+      <div className="p-4 mt-2">
+        <div className="border rounded-lg p-4 bg-red-100 text-red-700">
+          <h3 className="font-bold mb-2">Error al cargar el mapa</h3>
+          <p className="mb-4">No se pudo cargar el mapa. Por favor, recarga la página.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="p-4 mt-2 flex justify-center items-center h-[75vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <LoadScript googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
-      <div className="p-4 mt-2">
-        <h2 className="text-2xl font-bold mb-4">Mapa Distribución de Usuarios</h2>
-        <div className="border rounded-lg overflow-hidden shadow-lg"> {/* Estilo del mapa con borde redondeado */}
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={center}
-            zoom={14}
-          >
-            {usersData.map(user => (
-              <MarkerF
-                key={user.id}
-                position={{ lat: user.lat, lng: user.lng }}
-                onClick={() => onMarkerClick(user)}
-              />
-            ))}
-          </GoogleMap>
-        </div>
-
-        {/* Modal para mostrar información del usuario seleccionado */}
-        <Modal
-          isOpen={!!selectedUser}
-          onRequestClose={onCloseClick}
-          ariaHideApp={false}
-          className="max-w-10xl mx-auto p-8 bg-white bg-opacity-70 rounded-lg shadow-2xl relative mt-16 outline-none"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center"
-          style={{
-            overlay: { zIndex: 1000 },
-            content: { maxHeight: '85vh', overflowY: 'auto' }
-          }}
+    <div className="p-4 mt-2">
+      <h2 className="text-2xl font-bold mb-4">Mapa Distribución de Usuarios</h2>
+      <div className="border rounded-lg overflow-hidden shadow-lg">
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={center}
+          zoom={14}
+          onLoad={handleMapLoad}
         >
-          <button
-            onClick={onCloseClick}
-            className="absolute top-4 right-4 text-gray-600 hover:text-red-500 transition duration-300"
-          >
-            <FaTimes size={24} />
-          </button>
-          {selectedUser && (
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-blue-800">{selectedUser.name}</h3>
-              <p className="text-gray-800 text-lg">{selectedUser.address}</p>
-              <p className="text-gray-600">{selectedUser.info}</p>
-              <p className="font-semibold">RUT: {selectedUser.rut}</p>
-            </div>
-          )}
-        </Modal>
+          {usersData?.map(user => (
+            <MarkerF
+              key={user.id}
+              position={{ lat: user.lat, lng: user.lng }}
+              onClick={() => onMarkerClick(user)}
+            />
+          ))}
+        </GoogleMap>
       </div>
-    </LoadScript>
+
+      <Modal
+        isOpen={!!selectedUser}
+        onRequestClose={onCloseClick}
+        ariaHideApp={false}
+        className="max-w-10xl mx-auto p-8 bg-white bg-opacity-70 rounded-lg shadow-2xl relative mt-16 outline-none"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { maxHeight: '85vh', overflowY: 'auto' }
+        }}
+      >
+        <button
+          onClick={onCloseClick}
+          className="absolute top-4 right-4 text-gray-600 hover:text-red-500 transition duration-300"
+        >
+          <FaTimes size={24} />
+        </button>
+        {selectedUser && (
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold text-blue-800">{selectedUser.name}</h3>
+            <p className="text-gray-800 text-lg">{selectedUser.address}</p>
+            <p className="text-gray-600">{selectedUser.info}</p>
+            <p className="font-semibold">RUT: {selectedUser.rut}</p>
+          </div>
+        )}
+      </Modal>
+    </div>
   );
 };
 

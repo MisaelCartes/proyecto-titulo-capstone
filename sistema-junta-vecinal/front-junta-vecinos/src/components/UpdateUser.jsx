@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import { jwtDecode } from 'jwt-decode';
 import validarRut from '../middlewares/validarRut';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
+
 
 const UpdateUser = () => {
     const { rut } = useParams();
@@ -25,25 +27,9 @@ const UpdateUser = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
+    useValidateRoleAndAccessToken(['1', '2'], '/login')
+    
     useEffect(() => {
-
-        if (!token) {
-            navigateToLogin("Acceso denegado", "No tienes permiso para acceder a esta página.");
-            return;
-        }
-
-        try {
-            const decodedToken = jwtDecode(token);
-            const userRole = decodedToken.rol;
-
-            if (userRole !== '1' && userRole !== '2') {
-                navigateToLogin("Acceso denegado", "No tienes permiso para acceder a esta página.");
-                return;
-            }
-            console.log("rut a enviar", rut)
-            // Obtener datos del usuario usando el RUT en el cuerpo de la solicitud
-            console.log("rut a enviar", rut);
-
             // Obtener datos del usuario enviando el RUT en el cuerpo de la solicitud GET
             axios({
                 method: 'get',
@@ -83,16 +69,7 @@ const UpdateUser = () => {
                     });
                 });
 
-        } catch (error) {
-            console.error("Error al decodificar el token:", error);
-            navigate('/login');
-        }
     }, [navigate, rut]);
-
-    const navigateToLogin = (title, text) => {
-        Swal.fire({ title, text, icon: "error", confirmButtonText: "Aceptar" });
-        navigate('/login');
-    };
 
     const isValidCharacter = (input) => /^[a-zA-ZÀ-ÿ\s]+$/.test(input);
     const isValidChileanPhoneNumber = (number) => /^9\d{8}$/.test(number);

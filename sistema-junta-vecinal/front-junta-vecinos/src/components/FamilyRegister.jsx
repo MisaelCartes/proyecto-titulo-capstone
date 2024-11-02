@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import validarRut from '../middlewares/validarRut';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import { jwtDecode } from 'jwt-decode'; // Importar jwt-decode
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
+
 
 const BASE_URL = 'http://127.0.0.1:8000'; // URL base de la API
 
@@ -22,31 +22,10 @@ export const FamilyRegister = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-  const [role, setRole] = useState(null); // Estado para almacenar el rol
-  const navigate = useNavigate(); // Usar useNavigate para redirigir
   const token = localStorage.getItem('token');
-  // Función para verificar el rol del usuario
-  const checkUserRole = () => {
-    if (token) {
-        try {
-            const decodedToken = jwtDecode(token);
-            const role = decodedToken.rol; // Obtener el rol del token
-            setRole(role);
 
-            console.log('Decoded Token:', decodedToken); // Para verificar la estructura del token
-
-            if (parseInt(role) !== 1) {
-                Swal.fire('Acceso Denegado', 'No tienes permiso para acceder a esta página.', 'error');
-                navigate('/panel'); // Redirigir a otra página si no es admin
-            }
-        } catch (error) {
-            console.error('Error decodificando el token:', error);
-            navigate('/login'); // Redirigir a la página de login si hay un error
-        }
-    } else {
-        navigate('/login'); // Redirigir a la página de login si no hay token
-    }
-};
+  // Validar la autentisidad del usuario
+  useValidateRoleAndAccessToken(['1'], '/panel')
 
   // Función mejorada para validar email
   const validateEmail = (email) => {
@@ -205,11 +184,6 @@ export const FamilyRegister = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Cargar la verificación de rol cuando el componente se monta
-  useEffect(() => {
-    checkUserRole(); // Verificar rol del usuario
-  }, []);
 
   return (
     <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8">

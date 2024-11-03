@@ -5,13 +5,14 @@ import {jwtDecode} from 'jwt-decode';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import dayjs from 'dayjs';
 
-const CertificadoStatus = () => {
+
+const CertificadoMoveStatus = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const token = localStorage.getItem('token');
 
-    // Usar el middleware para verificar los roles permitidos (1 y 2)
-    useValidateRoleAndAccessToken(["1", "2"], '/login');
+    // Usar el middleware para verificar los roles permitidos (1)
+    useValidateRoleAndAccessToken(["1"], '/panel');
 
     const fetchRequests = async () => {
       
@@ -19,7 +20,7 @@ const CertificadoStatus = () => {
             const decodedToken = jwtDecode(token);
             const rut = decodedToken.rut;
             
-            const response = await axios.get(`http://127.0.0.1:8000/certificados/list/user/?rut=${rut}`, {
+            const response = await axios.get(`http://127.0.0.1:8000/certificados/list/admin/?rut=${rut}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             return response.data;
@@ -51,7 +52,7 @@ const CertificadoStatus = () => {
 
     return (
         <div className="mx-auto w-12/13 px-4 mt-8">
-            <h1 className="text-2xl font-bold mb-4">Estado de Mis Solicitudes</h1>
+            <h1 className="text-2xl font-bold mb-4">Gestionar Estado de Solicitudes</h1>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-gray-800 text-white rounded-lg">
                     <thead>
@@ -80,4 +81,4 @@ const CertificadoStatus = () => {
     );
 };
 
-export default CertificadoStatus;
+export default CertificadoMoveStatus;

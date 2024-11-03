@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import validarRut from '../middlewares/validarRut';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
-
+import { jwtDecode } from 'jwt-decode';
 
 const BASE_URL = 'http://127.0.0.1:8000'; // URL base de la API
 
@@ -22,10 +22,23 @@ export const FamilyRegister = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [rut, setRut] = useState('');
   const token = localStorage.getItem('token');
 
-  // Validar la autentisidad del usuario
-  useValidateRoleAndAccessToken(['1'], '/panel')
+  // Validar la autenticidad del usuario
+  useValidateRoleAndAccessToken(['1', '2'], '/login');
+
+  // Efecto para obtener y establecer el RUT del token
+  useEffect(() => {
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setRut(decodedToken.rut);
+      setFormData(prev => ({
+        ...prev,
+        rut: decodedToken.rut
+      }));
+    }
+  }, [token]);
 
   // Función mejorada para validar email
   const validateEmail = (email) => {
@@ -107,17 +120,12 @@ export const FamilyRegister = () => {
     // Formatear RUT si es necesario
     if (name === 'rutMember') {
       formattedValue = formatRut(value);
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedValue,
-        rut: formattedValue // Asignar el mismo valor a 'rut'
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedValue
-      }));
     }
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: formattedValue
+    }));
 
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
@@ -286,7 +294,6 @@ export const FamilyRegister = () => {
             </div>
           </div>
 
-
           {/* Fecha de Nacimiento */}
           <div>
             <label htmlFor="date_of_birth" className="block text-sm font-medium text-white">
@@ -351,8 +358,7 @@ export const FamilyRegister = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-md bg-indigo-600 py-2 px-3 text-white font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600"
-            >
+              className= "w-full rounded-md bg-indigo-600 py-2 px-3 text-white font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600">
               {isSubmitting ? 'Registrando...' : 'Registrar Miembro'}
             </button>
           </div>

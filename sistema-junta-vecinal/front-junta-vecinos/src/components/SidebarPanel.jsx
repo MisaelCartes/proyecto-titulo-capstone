@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { FaUser, FaFolder, FaRegClipboard, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper, FaUserPlus } from 'react-icons/fa';
+import { FaUser, FaFolder, FaRegClipboard, FaClipboardCheck, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper, FaUserPlus } from 'react-icons/fa';
 import ViewUser from './ViewUser';
 import Dashboard from './Dasboard';
 import { ViewNews } from './ViewNews';
@@ -10,8 +10,7 @@ import CreateCertificationFrom from './CreateCertificationFrom';
 import CertificadoStatus from './CertificadoStatus';
 import { FamilyRegister } from './FamilyRegister';
 import MapaInteractive from './MapaInteractive';
-
-
+import CertificadoMoveStatus from './CertificadoMoveStatus';
 
 const SidebarPanel = () => {
     const [isOpen, setIsOpen] = useState(true);
@@ -26,6 +25,7 @@ const SidebarPanel = () => {
     const [viewCertificadoStatus, setViewCertificadoStatus] = useState(false);
     const [viewFamilyRegister, setViewFamilyRegister] = useState(false);
     const [viewMapa, setViewMapa] = useState(false);
+    const [viewCertificadoMoveStatus, setViewCertificadoMoveStatus] = useState(false);
     const navigate = useNavigate();
     const [rut, setRut] = useState(null);
     const [rol, setRole] = useState(null);
@@ -35,7 +35,7 @@ const SidebarPanel = () => {
         if (accessToken) {
             try {
                 const decodedToken = jwtDecode(accessToken);
-                const { exp, rut, rol } = decodedToken; 
+                const { exp, rut, rol } = decodedToken;
                 setRut(rut);
                 setRole(rol);
                 console.log(rol)
@@ -80,6 +80,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleNewsClick = () => {
@@ -91,6 +92,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleCreateNewsClick = () => {
@@ -102,6 +104,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleCreateCertificationClick = () => {
@@ -113,6 +116,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleCertificadoStatusClick = () => {
@@ -124,6 +128,7 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleFamilyRegisterClick = () => {
@@ -135,11 +140,37 @@ const SidebarPanel = () => {
         setViewCreateCertification(false);
         setViewCertificadoStatus(false);
         setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
     };
 
     const handleBackClick = () => {
-        setViewUser(false);
         setViewDashboard(true);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
+        setViewMapa(false);
+        setViewCertificadoMoveStatus(false);
+    };
+
+    const handleMapaClick = () => {
+        setViewMapa(true);
+        setViewUser(false);
+        setViewDashboard(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
+        setViewCertificadoMoveStatus(false);
+    };
+
+    const handleCertificadoMoveStatusClick = () => {
+        setViewCertificadoMoveStatus(true);
+        setViewDashboard(false);
+        setViewUser(false);
         setViewNews(false);
         setViewCreateNews(false);
         setViewCreateCertification(false);
@@ -148,21 +179,9 @@ const SidebarPanel = () => {
         setViewMapa(false);
     };
 
-    const handleMapaClick = () => {
-        setViewMapa(true); // Activa el mapa
-        setViewUser(false);
-        setViewDashboard(false);
-        setViewNews(false);
-        setViewCreateNews(false);
-        setViewCreateCertification(false);
-        setViewCertificadoStatus(false);
-        setViewFamilyRegister(false);
-    };
     return (
         <div className="flex">
-            {/* Menú Plegable */}
             <div className={`transition-width duration-300 bg-gray-800 text-white ${isOpen ? 'w-64' : 'w-16'} h-screen relative flex flex-col`}>
-                {/* Logo */}
                 <div className="flex items-center justify-center py-4">
                     <img
                         src="/diversity.png"
@@ -171,7 +190,6 @@ const SidebarPanel = () => {
                     />
                 </div>
 
-                {/* Botón de Plegar */}
                 <div className="absolute right-0 top-0 transform translate-x-1/2">
                     <button
                         onClick={toggleSidebar}
@@ -181,7 +199,6 @@ const SidebarPanel = () => {
                     </button>
                 </div>
 
-                {/* Ítems del Menú */}
                 <div className="mt-10 flex-grow overflow-y-auto">
                     {isOpen && (
                         <>
@@ -197,7 +214,7 @@ const SidebarPanel = () => {
                                 </NavLink>
                             )}
 
-                            {rol === "1" && (
+                            {(rol === "1" || rol === "2") && (
                                 <div
                                     className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                     onClick={toggleUsuarios}
@@ -207,8 +224,8 @@ const SidebarPanel = () => {
                                 </div>
                             )}
 
-                            {rol === "1" && showUsuarios && (
-                                <div className="pl-4">
+                            <div className="pl-4">
+                                {rol === "1" && showUsuarios && (
                                     <div
                                         className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                         onClick={handleUserClick}
@@ -216,7 +233,8 @@ const SidebarPanel = () => {
                                         <FaUser className="mr-2" />
                                         <span>Ver Usuarios</span>
                                     </div>
-
+                                )}
+                                {(rol === "1" || rol === "2") && showUsuarios && (
                                     <div
                                         className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                         onClick={handleFamilyRegisterClick}
@@ -224,8 +242,8 @@ const SidebarPanel = () => {
                                         <FaUserPlus className="mr-2" />
                                         <span>Agregar Miembro</span>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
 
                             <div className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer" onClick={toggleCertificados}>
                                 <FaFileAlt className="mr-2" />
@@ -233,6 +251,15 @@ const SidebarPanel = () => {
                             </div>
                             {showCertificados && (
                                 <div className="pl-4">
+                                    {rol === "1" && ( // Solo visible para administradores
+                                        <div
+                                            className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                            onClick={handleCertificadoMoveStatusClick}
+                                        >
+                                            <FaClipboardCheck className="mr-2" />
+                                            <span>Gestionar Solicitudes</span>
+                                        </div>
+                                    )}
                                     <div
                                         className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                         onClick={handleCreateCertificationClick}
@@ -289,7 +316,6 @@ const SidebarPanel = () => {
                     )}
                 </div>
 
-                {/* Mi Perfil, Configuraciones y Ayuda al final del menú */}
                 {isOpen && (
                     <div className="mt-auto mb-4">
                         <NavLink
@@ -320,7 +346,6 @@ const SidebarPanel = () => {
                 )}
             </div>
 
-            {/* Contenido Principal */}
             <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen">
                 <div className="mt-4">
                     <input
@@ -330,7 +355,6 @@ const SidebarPanel = () => {
                     />
                 </div>
 
-                {/* Renderizado condicional de componentes */}
                 {viewUser && rol === "1" ? (
                     <ViewUser onBackClick={handleBackClick} />
                 ) : viewDashboard && rol === "1" ? (
@@ -343,10 +367,12 @@ const SidebarPanel = () => {
                     <CreateCertificationFrom onBackClick={handleBackClick} />
                 ) : viewCertificadoStatus ? (
                     <CertificadoStatus onBackClick={handleBackClick} />
-                ) : viewFamilyRegister && rol === "1" ? (
+                ) : viewFamilyRegister ? (
                     <FamilyRegister onBackClick={handleBackClick} />
                 ) : viewMapa && rol === "1" ? (
                     <MapaInteractive onBackClick={handleBackClick} />
+                ) : viewCertificadoMoveStatus && rol === "1" ? (
+                    <CertificadoMoveStatus onBackClick={handleBackClick} />
                 ) : null}
             </div>
         </div>

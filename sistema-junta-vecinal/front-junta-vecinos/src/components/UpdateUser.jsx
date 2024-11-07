@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import { jwtDecode } from 'jwt-decode';
 import validarRut from '../middlewares/validarRut';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
+
 
 const UpdateUser = () => {
     const { rut } = useParams();
@@ -23,33 +25,18 @@ const UpdateUser = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false); // Estado de carga
     const navigate = useNavigate();
+    const token = localStorage.getItem("token");
 
+    useValidateRoleAndAccessToken(['1', '2'], '/login')
+    
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigateToLogin("Acceso denegado", "No tienes permiso para acceder a esta página.");
-            return;
-        }
-
-        try {
-            const decodedToken = jwtDecode(token);
-            const userRole = decodedToken.rol;
-
-            if (userRole !== '1' && userRole !== '2') {
-                navigateToLogin("Acceso denegado", "No tienes permiso para acceder a esta página.");
-                return;
-            }
-            console.log("rut a enviar", rut)
-            // Obtener datos del usuario usando el RUT en el cuerpo de la solicitud
-            // Asegúrate de que 'rut' esté definido y tenga un valor antes de esta línea
-            console.log("rut a enviar", rut);
-
             // Obtener datos del usuario enviando el RUT en el cuerpo de la solicitud GET
             axios({
                 method: 'get',
                 url: 'http://127.0.0.1:8000/user/list/one/',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 params: {
                     rut: rut
@@ -82,16 +69,7 @@ const UpdateUser = () => {
                     });
                 });
 
-        } catch (error) {
-            console.error("Error al decodificar el token:", error);
-            navigate('/login');
-        }
     }, [navigate, rut]);
-
-    const navigateToLogin = (title, text) => {
-        Swal.fire({ title, text, icon: "error", confirmButtonText: "Aceptar" });
-        navigate('/login');
-    };
 
     const isValidCharacter = (input) => /^[a-zA-ZÀ-ÿ\s]+$/.test(input);
     const isValidChileanPhoneNumber = (number) => /^9\d{8}$/.test(number);
@@ -174,7 +152,13 @@ const UpdateUser = () => {
             address: formData.address,
             housingType: formData.housingType,
             photo: formData.photo,
-        })
+        },{
+                headers: {
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                }
+            }
+        )
             .then(() => {
                 Swal.fire({
                     title: "Actualización exitosa",
@@ -182,7 +166,7 @@ const UpdateUser = () => {
                     icon: "success",
                     confirmButtonText: "Aceptar",
                 });
-                navigate('/panel'); 
+                navigate('/panel');
             })
             .catch((error) => {
                 console.error("Error al actualizar el usuario:", error);

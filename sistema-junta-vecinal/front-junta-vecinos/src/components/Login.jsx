@@ -13,13 +13,19 @@ export default function Login() {
     setRut(e.target.value);
   };
 
+  function limpiarRut(rut) {
+      // Elimina los puntos y el guion del RUT
+      return rut.replace(/[.-]/g, '');
+  } 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     setLoginMessage('');
     setErrors({});
 
-    if (!rut) {
+    let rutFormated = limpiarRut(rut);
+    if (!rutFormated) {
       newErrors.rut = 'El RUT es requerido';
     }
 
@@ -32,7 +38,7 @@ export default function Login() {
     if (Object.keys(newErrors).length === 0) {
       try {
         const response = await axios.post('http://127.0.0.1:8000/login/', {
-          rut: rut,
+          rut: rutFormated,
           password
         });
 
@@ -66,7 +72,7 @@ export default function Login() {
 
   const handleCreateAccount = () => {
     console.log('Redirigiendo a la página de creación de cuenta...');
-    navigate('/panel');
+    navigate('/register');
   };
 
   return (
@@ -90,6 +96,7 @@ export default function Login() {
                 name="rut"
                 type="text"
                 autoComplete="rut"
+                placeholder='Ingrese su Usuario (11111111-1)'
                 value={rut}
                 onChange={handleRutChange}
                 required
@@ -108,6 +115,7 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
+                placeholder='Ingrese su Contraseña'
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -141,7 +149,7 @@ export default function Login() {
           </span>
         </div>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
@@ -170,7 +178,7 @@ export default function Login() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

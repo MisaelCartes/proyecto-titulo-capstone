@@ -18,14 +18,14 @@ export default function Page404() {
   
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <a
-              href="#"
+              href="/"
               className="rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition duration-200 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Regresar a la página de inicio
             </a>
-            <a href="#" className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
+            {/* <a href="/#footer" className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
               Contactar soporte <span aria-hidden="true">&rarr;</span>
-            </a>
+            </a> */}
           </div>
         </div>
       </main>

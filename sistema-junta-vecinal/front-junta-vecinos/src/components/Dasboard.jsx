@@ -2,8 +2,7 @@ import * as React from 'react';
 import { Container, Typography, Grid } from '@mui/material';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
-import Stack from '@mui/material/Stack';
-import { FormControlLabel, FormControl, FormLabel, RadioGroup, Radio, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 
 // Datos de demografía de usuarios
 const userDemographics = [
@@ -34,8 +33,11 @@ const userSatisfaction = [
   { label: 'Alto', value: 250 },
 ];
 
+
+
 // Componente principal del Dashboard
 const Dashboard = () => {
+  useValidateRoleAndAccessToken(["1"]); 
   return (
     <Container sx={{ width: '95%', margin: '0 auto', paddingTop: 4 }}>
       <Typography variant="h4" gutterBottom>

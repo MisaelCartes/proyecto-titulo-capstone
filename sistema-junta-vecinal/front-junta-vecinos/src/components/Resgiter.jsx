@@ -11,17 +11,17 @@ const isValidChileanPhoneNumber = (phone) => /^9\d{8}$/.test(phone);
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: 'Jimmy Huste',
-    lastName: 'Exantus',
+    firstName: '',
+    lastName: '',
     motherLastName: '',
-    rut: '37560106-0',
-    address: 'Santiago 123',
-    password: '123456',
-    phoneNumber: '987654321', 
-    email: 'jimmy@gmail.com',
+    rut: '',
+    address: '',
+    password: '',
+    phoneNumber: '', 
+    email: '',
     role: 'MEMBER',
     photo: null,
-    housingType: 'Casa',
+    housingType: '',
   });
 
   const [errors, setErrors] = useState({}); // Para almacenar errores de validación
@@ -143,6 +143,7 @@ const Register = () => {
                 id="firstName"
                 name="firstName"
                 type="text"
+                placeholder='Ingrese su nombre'
                 value={formData.firstName}
                 onChange={handleChange}
                 required
@@ -161,6 +162,7 @@ const Register = () => {
                 id="lastName"
                 name="lastName"
                 type="text"
+                placeholder='Ingrese su apellido paterno'
                 value={formData.lastName}
                 onChange={handleChange}
                 required
@@ -179,6 +181,7 @@ const Register = () => {
                 id="motherLastName"
                 name="motherLastName"
                 type="text"
+                placeholder='Opcional'
                 value={formData.motherLastName}
                 onChange={handleChange}
                 className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -196,6 +199,7 @@ const Register = () => {
                 id="rut"
                 name="rut"
                 type="text"
+                placeholder='Ingrese su rut (11111111-1)'
                 value={formData.rut}
                 onChange={handleChange}
                 required
@@ -214,6 +218,7 @@ const Register = () => {
                 id="address"
                 name="address"
                 type="text"
+                placeholder='Ingrese la dirección de domicilio'
                 value={formData.address}
                 onChange={handleChange}
                 required
@@ -232,6 +237,7 @@ const Register = () => {
                 id="phoneNumber"
                 name="phoneNumber"
                 type="text"
+                placeholder='Ingrese tu número telefónico (987654321)'
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 required
@@ -250,6 +256,7 @@ const Register = () => {
                 id="email"
                 name="email"
                 type="email"
+                placeholder='Ingrese tu correo electrónico'
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -268,6 +275,7 @@ const Register = () => {
                 id="password"
                 name="password"
                 type="password"
+                placeholder='Ingrese su contraseña'
                 value={formData.password}
                 onChange={handleChange}
                 required

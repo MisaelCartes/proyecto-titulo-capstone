@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const [rut, setRut] = useState('');
@@ -8,10 +9,11 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loginMessage, setLoginMessage] = useState('');
   const navigate = useNavigate(); 
-
+  const { themes } = useTheme();
   const handleRutChange = (e) => {
     setRut(e.target.value);
   };
+  
 
   function limpiarRut(rut) {
       // Elimina los puntos y el guion del RUT
@@ -76,109 +78,80 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: '#0D1A2D' }}>
+    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: themes.background }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <img className="mx-auto h-10 w-auto" src="/diversity.png" alt="Junta Vecinos" />
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight" style={{ color: themes.text }}>
           Inicia sesión en tu cuenta
         </h2>
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
-              RUT
-            </label>
-            <div className="mt-2">
-              <input
-                id="rut"
-                name="rut"
-                type="text"
-                autoComplete="rut"
-                placeholder='Ingrese su Usuario (11111111-1)'
-                value={rut}
-                onChange={handleRutChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.rut && <p className="mt-2 text-sm text-red-600">{errors.rut}</p>}
+        <div className="bg-gray-800 px-8 py-10 rounded-lg">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
+                RUT
+              </label>
+              <div className="mt-2">
+                <input
+                  id="rut"
+                  name="rut"
+                  type="text"
+                  autoComplete="rut"
+                  placeholder='Ingrese su Usuario (11111111-1)'
+                  value={rut}
+                  onChange={handleRutChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.rut && <p className="mt-2 text-sm text-red-500">{errors.rut}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
-              Contraseña
-            </label>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder='Ingrese su Contraseña'
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
+                Contraseña
+              </label>
+              <div className="mt-2">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder='Ingrese su Contraseña'
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
+              </div>
             </div>
-          </div>
 
-          {loginMessage && (
-            <div className={`p-4 rounded-md ${loginMessage.includes('exitoso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {loginMessage}
+            {loginMessage && (
+              <div className={`p-4 rounded-md ${loginMessage.includes('exitoso') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {loginMessage}
+              </div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                Iniciar sesión
+              </button>
             </div>
-          )}
+          </form>
 
-          <div>
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Iniciar sesión
-            </button>
+          <div className="mt-6 text-center">
+            <span className="text-white">¿No tienes una cuenta? </span>
+            <span onClick={handleCreateAccount} className="cursor-pointer text-blue-500 hover:text-blue-400 hover:underline">
+              Créala aquí
+            </span>
           </div>
-        </form>
-
-        <div className="mt-6 text-center">
-          <span className="text-white">¿No tienes una cuenta? </span>
-          <span onClick={handleCreateAccount} className="cursor-pointer text-blue-500 hover:underline">
-            Créala aquí
-          </span>
         </div>
-
-        {/* <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-[#0D1A2D] px-2 text-white">o inicia sesión con</span>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div>
-              <button
-                type="button"
-                className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-              >
-                Google
-              </button>
-            </div>
-
-            <div>
-              <button
-                type="button"
-                className="flex w-full justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-              >
-                Clave Única
-              </button>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

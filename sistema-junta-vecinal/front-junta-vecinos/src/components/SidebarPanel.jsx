@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { FaUser, FaFolder, FaRegClipboard, FaClipboardCheck, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper, FaUserPlus } from 'react-icons/fa';
+import { FaUser, FaFolder, FaRegClipboard, FaClipboardCheck, FaEye, FaPaperPlane, FaFileAlt, FaTachometerAlt, FaMap, FaClipboardList, FaCog, FaQuestionCircle, FaBell, FaNewspaper, FaUserPlus, FaRegEye } from 'react-icons/fa';
 import ViewUser from './ViewUser';
 import Dashboard from './Dasboard';
 import { ViewNews } from './ViewNews';
@@ -11,6 +11,10 @@ import CertificadoStatus from './CertificadoStatus';
 import { FamilyRegister } from './FamilyRegister';
 import MapaInteractive from './MapaInteractive';
 import CertificadoMoveStatus from './CertificadoMoveStatus';
+import FamilyMemberDetails from './FamilyMemberDetails';
+
+//theme 
+import { useTheme } from '../context/ThemeContext';
 
 const SidebarPanel = () => {
     const [isOpen, setIsOpen] = useState(true);
@@ -26,9 +30,11 @@ const SidebarPanel = () => {
     const [viewFamilyRegister, setViewFamilyRegister] = useState(false);
     const [viewMapa, setViewMapa] = useState(false);
     const [viewCertificadoMoveStatus, setViewCertificadoMoveStatus] = useState(false);
+    const [viewFamilyMember, setviewFamilyMember] = useState(false);
     const navigate = useNavigate();
     const [rut, setRut] = useState(null);
     const [rol, setRole] = useState(null);
+
 
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
@@ -81,6 +87,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleNewsClick = () => {
@@ -93,6 +100,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleCreateNewsClick = () => {
@@ -105,6 +113,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleCreateCertificationClick = () => {
@@ -117,6 +126,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleCertificadoStatusClick = () => {
@@ -129,6 +139,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleFamilyRegisterClick = () => {
@@ -141,6 +152,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleBackClick = () => {
@@ -153,6 +165,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleMapaClick = () => {
@@ -165,6 +178,7 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewCertificadoMoveStatus(false);
+        setviewFamilyMember(false);
     };
 
     const handleCertificadoMoveStatusClick = () => {
@@ -177,11 +191,29 @@ const SidebarPanel = () => {
         setViewCertificadoStatus(false);
         setViewFamilyRegister(false);
         setViewMapa(false);
+        setviewFamilyMember(false);
+    };
+    
+    const handleViewFamiliyMemberClick = () => {
+        setviewFamilyMember(true);
+        setViewCertificadoMoveStatus(false);
+        setViewDashboard(false);
+        setViewUser(false);
+        setViewNews(false);
+        setViewCreateNews(false);
+        setViewCreateCertification(false);
+        setViewCertificadoStatus(false);
+        setViewFamilyRegister(false);
+        setViewMapa(false);
     };
 
+    const { themes } = useTheme();
     return (
-        <div className="flex">
-            <div className={`transition-width duration-300 bg-gray-800 text-white ${isOpen ? 'w-64' : 'w-16'} h-screen relative flex flex-col`}>
+        <div className="flex" style={{ backgroundColor: themes.background, color: themes.text }}>
+            <div
+                className={`transition-width duration-300 ${isOpen ? 'w-64' : 'w-16'} h-screen relative flex flex-col shadow-md border border-gray-700`}
+                style={{ backgroundColor: '#2d3748', color: '#f7fafc' }}
+            >
                 <div className="flex items-center justify-center py-4">
                     <img
                         src="/diversity.png"
@@ -190,10 +222,11 @@ const SidebarPanel = () => {
                     />
                 </div>
 
+                {/* Toggle Button - Mejorado sutilmente */}
                 <div className="absolute right-0 top-0 transform translate-x-1/2">
                     <button
                         onClick={toggleSidebar}
-                        className="m-8 p-1 bg-gray-700 rounded-full focus:outline-none hover:bg-gray-600"
+                        className="m-8 p-1.5 bg-indigo-800 hover:bg-indigo-700 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 border border-indigo-500"
                     >
                         <span className="text-white text-lg">{isOpen ? '<' : '>'}</span>
                     </button>
@@ -243,6 +276,15 @@ const SidebarPanel = () => {
                                         <span>Agregar Miembro</span>
                                     </div>
                                 )}
+                                {(rol === "1" || rol === "2") && showUsuarios && (
+                                    <div
+                                        className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
+                                        onClick={handleViewFamiliyMemberClick}
+                                    >
+                                        <FaRegEye className="mr-2" />
+                                        <span>Ver Miembros</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer" onClick={toggleCertificados}>
@@ -251,7 +293,7 @@ const SidebarPanel = () => {
                             </div>
                             {showCertificados && (
                                 <div className="pl-4">
-                                    {rol === "1" && ( // Solo visible para administradores
+                                    {rol === "1" && (
                                         <div
                                             className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center cursor-pointer"
                                             onClick={handleCertificadoMoveStatusClick}
@@ -317,7 +359,7 @@ const SidebarPanel = () => {
                 </div>
 
                 {isOpen && (
-                    <div className="mt-auto mb-4">
+                    <div className="mt-auto mb-8">
                         <NavLink
                             to={`/user/${rut}/edit`}
                             className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
@@ -326,14 +368,14 @@ const SidebarPanel = () => {
                             <img src="/boy.png" alt="Avatar" className="h-6 w-6 rounded-full mr-2" />
                             <span>Mi Perfil</span>
                         </NavLink>
-                        <NavLink
+                        {/* <NavLink
                             to="/configuraciones"
                             className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
                             activeClassName="bg-gray-600"
                         >
                             <FaCog className="mr-2" />
                             <span>Configuraciones</span>
-                        </NavLink>
+                        </NavLink> */}
                         <NavLink
                             to="/ayuda"
                             className="block py-2 px-4 hover:bg-gray-600 text-left flex items-center"
@@ -346,12 +388,24 @@ const SidebarPanel = () => {
                 )}
             </div>
 
-            <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen">
-                <div className="mt-4">
+
+            <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen" style={{ backgroundColor: themes.background, color: themes.text }}>
+
+                <div className="mt-2 mb-6 flex justify-center">
                     <input
                         type="text"
                         placeholder="Buscar..."
-                        className="w-full p-2 border border-gray-300 rounded"
+                        className="w-4/5 p-2 border rounded-md focus:outline-none"
+                        style={{
+                            backgroundColor: themes.background, // Fondo según el tema
+                            color: themes.text, // Color del texto según el tema
+                            borderColor: themes.background === '#ffffff' ? '#e2e8f0' : themes.border, // Borde visible siempre
+                            transition: 'border-color 0.3s, box-shadow 0.3s', // Transición suave en el cambio de borde y sombra
+                            boxShadow: '0 0 0 2px rgba(0, 123, 255, 0.1)' // Sombra suave y sutil sin sobrecargar
+                        }}
+                        // Estilo del borde cuando está enfocado (con el click)
+                        onFocus={(e) => e.target.style.borderColor = '#007bff'} // Cambia a un borde más visible
+                        onBlur={(e) => e.target.style.borderColor = themes.background === '#ffffff' ? '#e2e8f0' : themes.border} // Vuelve al borde original
                     />
                 </div>
 
@@ -373,6 +427,8 @@ const SidebarPanel = () => {
                     <MapaInteractive onBackClick={handleBackClick} />
                 ) : viewCertificadoMoveStatus && rol === "1" ? (
                     <CertificadoMoveStatus onBackClick={handleBackClick} />
+                ) : viewFamilyMember ? (
+                    <FamilyMemberDetails onBackClick={handleBackClick}/> 
                 ) : null}
             </div>
         </div>

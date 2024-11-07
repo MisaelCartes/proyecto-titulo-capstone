@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode'; // Asegúrate de tener esta librería instalada
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
-
+import { useTheme } from '../context/ThemeContext';
 
 const CreateCertificationForm = () => {
     const [formData, setFormData] = useState({
-        rutUser: '',
         rutRequest: '',
     });
     const [errors, setErrors] = useState({});
     const [infoVisible, setInfoVisible] = useState({
-        rutUser: false,
         rutRequest: false,
     });
     const token = localStorage.getItem('token');
+    const decodedToken = jwtDecode(token);
+    const rutUser = decodedToken.rut; // Asegúrate de que "rut" sea la clave correcta en el token decodificado
+
+    const { themes } = useTheme();
     useValidateRoleAndAccessToken(["1", "2"], '/login');
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -27,7 +31,7 @@ const CreateCertificationForm = () => {
 
         try {
             await axios.post('http://127.0.0.1:8000/create/solicitud/', {
-                rutUser: formData.rutUser,
+                rutUser: rutUser,
                 rutRequest: formData.rutRequest,
             }, {
                 headers: {
@@ -43,7 +47,6 @@ const CreateCertificationForm = () => {
             });
 
             setFormData({
-                rutUser: '',
                 rutRequest: '',
             });
         } catch (error) {
@@ -67,44 +70,13 @@ const CreateCertificationForm = () => {
     };
 
     return (
-        <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8">
+        <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8" style={{ backgroundColor: themes.background, color: themes.text }}>
             <div className="max-w-3xl rounded-lg p-8 mx-auto bg-gray-800">
                 <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
                     Crear una nueva solicitud
                 </h2>
 
                 <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="rutUser" className="block text-sm font-medium text-white">
-                            Rut del Usuario
-                        </label>
-                        <div className="mt-2 flex items-center">
-                            <input
-                                id="rutUser"
-                                name="rutUser"
-                                type="text"
-                                placeholder='Ingrese el Rut del usuario'
-                                value={formData.rutUser}
-                                onChange={handleChange}
-                                required
-                                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                            />
-                            <button
-                                type="button"
-                                className="ml-2 flex items-center justify-center h-8 w-8 rounded-full bg-gray-600 text-white focus:outline-none"
-                                onClick={() => toggleInfo('rutUser')}
-                            >
-                                ?
-                            </button>
-                        </div>
-                        {infoVisible.rutUser && (
-                            <p className="text-gray-500 text-xs mt-1">
-                                El rut del usuario se refiere al jefe de hogar, quien gestiona los recursos y servicios del núcleo familiar. Este usuario puede tener otros miembros que residen en el mismo hogar. Es fundamental que el RUT del usuario esté correctamente ingresado para identificar al hogar y su composición, lo que facilita el acceso a beneficios y servicios comunitarios ofrecidos por la junta vecinal.
-                            </p>
-                        )}
-                        {errors.rutUser && <p className="text-red-500 text-xs mt-1">{errors.rutUser}</p>}
-                    </div>
-
                     <div>
                         <label htmlFor="rutRequest" className="block text-sm font-medium text-white">
                             Rut del Solicitante
@@ -114,7 +86,7 @@ const CreateCertificationForm = () => {
                                 id="rutRequest"
                                 name="rutRequest"
                                 type="text"
-                                placeholder='Ingrese el Rut de la solicitud'
+                                placeholder='Ingrese el Rut del solicitante'
                                 value={formData.rutRequest}
                                 onChange={handleChange}
                                 required
@@ -141,7 +113,7 @@ const CreateCertificationForm = () => {
                             type="submit"
                             className="block w-full rounded-md bg-indigo-600 py-2 px-4 text-white font-semibold shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                            Crear Solicitud
+                            Enviar Solicitud
                         </button>
                     </div>
                 </form>

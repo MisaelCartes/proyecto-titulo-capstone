@@ -3,7 +3,7 @@ import axios from 'axios';
 import validarRut from '../middlewares/validarRut';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-
+import { useTheme } from '../context/ThemeContext';
 const isValidCharacter = (value) => /^[A-Za-zÀ-ÿ\s]+$/.test(value); // Solo letras y espacios
 
 // Expresión regular para números de teléfono chilenos (celulares)
@@ -23,7 +23,7 @@ const Register = () => {
     photo: null,
     housingType: '',
   });
-
+  const { themes } = useTheme();
   const [errors, setErrors] = useState({}); // Para almacenar errores de validación
   const navigate = useNavigate(); 
 
@@ -123,193 +123,195 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: '#0D1A2D' }}>
+    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: themes.background }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <img className="mx-auto h-10 w-auto" src="/diversity.png" alt="Junta Vecinos" />
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight" style={{ color: themes.text }}>
           Regístrate para una nueva cuenta
         </h2>
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-3xl">
-        <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
-          {/* Primer layout */}
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-white">
-              Nombre
-            </label>
-            <div className="mt-2">
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                placeholder='Ingrese su nombre'
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+        <div className="bg-gray-800 px-8 py-10 rounded-lg">
+          <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
+            {/* Primer layout */}
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-white">
+                Nombre
+              </label>
+              <div className="mt-2">
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  placeholder='Ingrese su nombre'
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-white">
-              Apellido Paterno
-            </label>
-            <div className="mt-2">
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                placeholder='Ingrese su apellido paterno'
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-white">
+                Apellido Paterno
+              </label>
+              <div className="mt-2">
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder='Ingrese su apellido paterno'
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="motherLastName" className="block text-sm font-medium leading-6 text-white">
-              Apellido Materno
-            </label>
-            <div className="mt-2">
-              <input
-                id="motherLastName"
-                name="motherLastName"
-                type="text"
-                placeholder='Opcional'
-                value={formData.motherLastName}
-                onChange={handleChange}
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.motherLastName && <p className="text-red-500 text-xs mt-1">{errors.motherLastName}</p>}
+            <div>
+              <label htmlFor="motherLastName" className="block text-sm font-medium leading-6 text-white">
+                Apellido Materno
+              </label>
+              <div className="mt-2">
+                <input
+                  id="motherLastName"
+                  name="motherLastName"
+                  type="text"
+                  placeholder='Opcional'
+                  value={formData.motherLastName}
+                  onChange={handleChange}
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.motherLastName && <p className="text-red-500 text-xs mt-1">{errors.motherLastName}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
-              RUT
-            </label>
-            <div className="mt-2">
-              <input
-                id="rut"
-                name="rut"
-                type="text"
-                placeholder='Ingrese su rut (11111111-1)'
-                value={formData.rut}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.rut && <p className="text-red-500 text-xs mt-1">{errors.rut}</p>}
+            <div>
+              <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
+                RUT
+              </label>
+              <div className="mt-2">
+                <input
+                  id="rut"
+                  name="rut"
+                  type="text"
+                  placeholder='Ingrese su rut (11111111-1)'
+                  value={formData.rut}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.rut && <p className="text-red-500 text-xs mt-1">{errors.rut}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
-              Dirección
-            </label>
-            <div className="mt-2">
-              <input
-                id="address"
-                name="address"
-                type="text"
-                placeholder='Ingrese la dirección de domicilio'
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
+                Dirección
+              </label>
+              <div className="mt-2">
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  placeholder='Ingrese la dirección de domicilio'
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium leading-6 text-white">
-              Teléfono
-            </label>
-            <div className="mt-2">
-              <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="text"
-                placeholder='Ingrese tu número telefónico (987654321)'
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium leading-6 text-white">
+                Teléfono
+              </label>
+              <div className="mt-2">
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="text"
+                  placeholder='Ingrese tu número telefónico (987654321)'
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
-              Correo Electrónico
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder='Ingrese tu correo electrónico'
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
+                Correo Electrónico
+              </label>
+              <div className="mt-2">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder='Ingrese tu correo electrónico'
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
-              Contraseña
-            </label>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder='Ingrese su contraseña'
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
+                Contraseña
+              </label>
+              <div className="mt-2">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder='Ingrese su contraseña'
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="photo" className="block text-sm font-medium leading-6 text-white">
-              Foto (opcional)
-            </label>
-            <div className="mt-2">
-              <input
-                id="photo"
-                name="photo"
-                type="file"
-                onChange={handleFileChange}
-                className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
+            <div>
+              <label htmlFor="photo" className="block text-sm font-medium leading-6 text-white">
+                Foto (opcional)
+              </label>
+              <div className="mt-2">
+                <input
+                  id="photo"
+                  name="photo"
+                  type="file"
+                  onChange={handleFileChange}
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="sm:col-span-2">
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm ring-1 ring-indigo-600 ring-inset hover:bg-indigo-700 focus:outline focus:outline-2 focus:outline-indigo-600 focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-            >
-              Crear cuenta
-            </button>
-            {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
-          </div>
-        </form>
+            <div className="sm:col-span-2">
+              <button
+                type="submit"
+                className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                Crear cuenta
+              </button>
+              {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

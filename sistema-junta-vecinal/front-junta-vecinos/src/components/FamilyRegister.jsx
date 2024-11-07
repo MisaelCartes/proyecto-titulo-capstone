@@ -4,6 +4,9 @@ import axios from 'axios';
 import validarRut from '../middlewares/validarRut';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { jwtDecode } from 'jwt-decode';
+import { useTheme } from '../context/ThemeContext';
+import { NavLink } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const BASE_URL = 'http://127.0.0.1:8000'; // URL base de la API
 
@@ -18,7 +21,7 @@ export const FamilyRegister = () => {
     email: '',
     phoneNumber: '',
   };
-
+  const { themes } = useTheme();
   const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -194,16 +197,15 @@ export const FamilyRegister = () => {
   };
 
   return (
-    <div className="flex-1 p-6 bg-gray-100 overflow-y-auto h-screen w-full mt-8">
+    <div className="flex-1 p-6 overflow-y-auto h-screen w-full mt-8" style={{ backgroundColor: themes.background }}>
       <div className="max-w-3xl rounded-lg p-8 mx-auto bg-gray-800">
         <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
           Registra un miembro de la familia
         </h2>
 
         <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
-          {/* RUT Member */}
           <div>
-            <label htmlFor="rutMember" className="block text-sm font-medium text-white">
+            <label htmlFor="rutMember" className="block text-sm font-medium leading-6 text-white">
               RUT del miembro
             </label>
             <div className="mt-2">
@@ -215,15 +217,14 @@ export const FamilyRegister = () => {
                 value={formData.rutMember}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.rutMember && <p className="text-red-500 text-xs mt-1">{errors.rutMember}</p>}
             </div>
           </div>
 
-          {/* Nombre */}
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-white">
+            <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-white">
               Nombre
             </label>
             <div className="mt-2">
@@ -235,15 +236,14 @@ export const FamilyRegister = () => {
                 value={formData.firstName}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
             </div>
           </div>
 
-          {/* Apellido */}
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-white">
+            <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-white">
               Apellido
             </label>
             <div className="mt-2">
@@ -255,15 +255,14 @@ export const FamilyRegister = () => {
                 value={formData.lastName}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
             </div>
           </div>
 
-          {/* Relación */}
           <div>
-            <label htmlFor="relationship" className="block text-sm font-medium text-white">
+            <label htmlFor="relationship" className="block text-sm font-medium leading-6 text-white">
               Relación
             </label>
             <div className="mt-2">
@@ -273,11 +272,9 @@ export const FamilyRegister = () => {
                 value={formData.relationship}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               >
-                <option value="" disabled>
-                  Seleccione la relación
-                </option>
+                <option value="" disabled>Seleccione la relación</option>
                 <option value="padre">Padre</option>
                 <option value="madre">Madre</option>
                 <option value="hermano/a">Hermano/a</option>
@@ -294,9 +291,8 @@ export const FamilyRegister = () => {
             </div>
           </div>
 
-          {/* Fecha de Nacimiento */}
           <div>
-            <label htmlFor="date_of_birth" className="block text-sm font-medium text-white">
+            <label htmlFor="date_of_birth" className="block text-sm font-medium leading-6 text-white">
               Fecha de Nacimiento
             </label>
             <div className="mt-2">
@@ -307,15 +303,14 @@ export const FamilyRegister = () => {
                 value={formData.date_of_birth}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.date_of_birth && <p className="text-red-500 text-xs mt-1">{errors.date_of_birth}</p>}
             </div>
           </div>
 
-          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white">
+            <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
               Email
             </label>
             <div className="mt-2">
@@ -327,15 +322,14 @@ export const FamilyRegister = () => {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
           </div>
 
-          {/* Teléfono */}
           <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-white">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium leading-6 text-white">
               Teléfono
             </label>
             <div className="mt-2">
@@ -347,18 +341,18 @@ export const FamilyRegister = () => {
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
               />
               {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
             </div>
           </div>
 
-          {/* Botón de envío */}
           <div className="sm:col-span-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className= "w-full rounded-md bg-indigo-600 py-2 px-3 text-white font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-600">
+              className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
               {isSubmitting ? 'Registrando...' : 'Registrar Miembro'}
             </button>
           </div>

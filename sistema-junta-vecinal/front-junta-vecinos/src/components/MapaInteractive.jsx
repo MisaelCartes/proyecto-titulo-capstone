@@ -3,6 +3,7 @@ import { GoogleMap, useLoadScript, MarkerF } from '@react-google-maps/api';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
+import { useTheme } from '../context/ThemeContext';
 
 const mapContainerStyle = {
   height: "75vh",
@@ -40,7 +41,9 @@ const libraries = ['places'];
 
 const MapaInteractive = () => {
   useValidateRoleAndAccessToken(['1'], '/login');
-  
+
+  const { themes } = useTheme();
+
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -61,29 +64,34 @@ const MapaInteractive = () => {
     setMap(map);
   }, []);
 
+  // Manejo de error
   if (loadError) {
     return (
-      <div className="p-4 mt-2">
-        <div className="border rounded-lg p-4 bg-red-100 text-red-700">
-          <h3 className="font-bold mb-2">Error al cargar el mapa</h3>
-          <p className="mb-4">No se pudo cargar el mapa. Por favor, recarga la página.</p>
+      <div className="p-4 mt-2" style={{ backgroundColor: themes.background }}>
+        <div className="rounded-lg p-4 bg-gray-800">
+          <h3 className="font-bold mb-2 text-white">Error al cargar el mapa</h3>
+          <p className="mb-4 text-gray-300">No se pudo cargar el mapa. Por favor, recarga la página.</p>
         </div>
       </div>
     );
   }
 
+  // Loading spinner
   if (!isLoaded) {
     return (
-      <div className="p-4 mt-2 flex justify-center items-center h-[75vh]">
+      <div className="p-4 mt-2 flex justify-center items-center h-[75vh]" style={{ backgroundColor: themes.background }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
+  // Componente principal
   return (
-    <div className="p-4 mt-2">
-      <h2 className="text-2xl font-bold mb-4">Mapa Distribución de Usuarios</h2>
-      <div className="border rounded-lg overflow-hidden shadow-lg">
+    <div className="p-4 mt-2" style={{ backgroundColor: themes.background }}>
+      <h2 className="text-2xl font-bold mb-4" style={{ color: themes.text }}>
+        Mapa Distribución de Usuarios
+      </h2>
+      <div className="rounded-lg overflow-hidden shadow-xl">
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={center}

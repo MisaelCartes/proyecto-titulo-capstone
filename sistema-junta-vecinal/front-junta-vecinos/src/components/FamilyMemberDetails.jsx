@@ -88,7 +88,7 @@ const FamilyMemberDetails = () => {
             setFamilyMembers(data);
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire('Error', 'No se pudieron obtener los miembros de la familia.', 'error');
+            //Swal.fire('Error', 'No se pudieron obtener los miembros de la familia.', 'error');
         }
     };
 

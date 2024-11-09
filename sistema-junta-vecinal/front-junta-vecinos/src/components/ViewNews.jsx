@@ -62,6 +62,7 @@ export const ViewNews = () => {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error cargando las publicaciones del blog.',
+                    
                 });
             }
         };

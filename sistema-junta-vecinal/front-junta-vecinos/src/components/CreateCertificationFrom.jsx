@@ -44,6 +44,8 @@ const CreateCertificationForm = () => {
                 icon: 'success',
                 title: 'Solicitud creada',
                 text: 'La solicitud se ha creado exitosamente.',
+                timer: 2000,
+                timerProgressBar: true
             });
 
             setFormData({
@@ -58,6 +60,8 @@ const CreateCertificationForm = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Hubo un problema al crear la solicitud. Por favor, intenta nuevamente.',
+                timer: 5000,
+                timerProgressBar: true
             });
         }
     };

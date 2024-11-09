@@ -52,6 +52,7 @@ const ViewUser = () => {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar',
+            
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(`${BASE_URL}/user/delete/`, {

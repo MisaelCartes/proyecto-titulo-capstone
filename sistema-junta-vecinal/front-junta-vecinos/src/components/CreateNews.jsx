@@ -82,6 +82,8 @@ export const CreateNews = () => {
             icon: 'error',
             title: 'Error al cargar la noticia',
             text: 'No se pudo cargar la noticia. Inténtalo más tarde.',
+            timer: 5000,
+            timerProgressBar: true
           });
         });
     }
@@ -154,6 +156,8 @@ export const CreateNews = () => {
         icon: 'success',
         title: isEditing ? 'Noticia editada' : 'Noticia creada',
         text: `La noticia ha sido ${isEditing ? 'editada' : 'creada'} exitosamente.`,
+        timer: 2000,
+        timerProgressBar: true
       });
 
       navigate('/panel'); // Redirigir después de crear/editar exitosamente
@@ -165,12 +169,16 @@ export const CreateNews = () => {
           icon: 'error',
           title: 'Error',
           text: error.response.data.error || 'Hubo un problema al procesar la solicitud.',
+          timer: 5000,
+          timerProgressBar: true
         });
       } else {
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Hubo un problema al procesar la solicitud. Por favor, intenta nuevamente.',
+          timer: 5000,
+          timerProgressBar: true
         });
       }
     }

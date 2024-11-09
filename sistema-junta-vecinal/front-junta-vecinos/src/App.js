@@ -5,7 +5,6 @@ import Register from './components/Resgiter';
 import SidebarPanel from './components/SidebarPanel';
 import Home from './pages/Home';
 import Page404 from './pages/Page404';
-// import Footer from './pages/Footer';
 import UpdateUser from './components/UpdateUser';
 import ViewUser from './components/ViewUser';
 import { UserDetails } from './components/UserDetails';
@@ -16,16 +15,19 @@ import CreateCertificationFrom from './components/CreateCertificationFrom';
 import CertificadoStatus from './components/CertificadoStatus';
 import MapaInteractive from './components/MapaInteractive';
 
-// theme 
+// theme
 import { ThemeProvider } from './context/ThemeContext';
 import { useTheme } from './context/ThemeContext';
 import ThemeSelector from './components/ThemeSelector';
 import './styles/theme.css';
+import Help from './pages/Help';
+import TermsAndPrivacy from './pages/TermsAndPrivacy ';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
-
-const AppContent = () => {
+// Componente envoltorio para las rutas que necesitan tema
+const ThemedContent = ({ children }) => {
   const { themes } = useTheme();
-
+  
   return (
     <div style={{
       backgroundColor: themes.background,
@@ -34,27 +36,90 @@ const AppContent = () => {
       transition: 'all 0.3s ease'
     }}>
       <ThemeSelector />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/panel" element={<SidebarPanel />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          {/* <Route path="/footer" element={<Footer />} /> */}
-          <Route path="/user/:rut/edit" element={<UpdateUser />} />
-          <Route path="/user-view" element={<ViewUser />} />
-          <Route path="/user/:rut/details" element={<UserDetails />} />
-          <Route path="/family/register" element={<FamilyRegister />} />
-          <Route path="/create/news" element={<CreateNews />} />
-          <Route path="/read/news" element={<ViewNews />} />
-          <Route path="/maps" element={<MapaInteractive />} />
-          <Route path="/certificados/solicitar/" element={<CreateCertificationFrom />} />
-          <Route path="/certificados/check/" element={<CertificadoStatus />} />
-          <Route path="/noticias/:id/edit" element={<CreateNews />} />
-
-          {/* Ruta para manejar rutas no encontradas */}
-          <Route path="*" element={<Page404 />} />
-        </Routes>
+      {children}
     </div>
+  );
+};
+
+const AppContent = () => {
+  return (
+    <Routes>
+      {/* Rutas sin tema */}
+      <Route path="/" element={<Home />} />
+      <Route path="/ayuda" element={<Help/>} />
+      <Route path="/terms-privacy" element={<TermsAndPrivacy/>} />
+      <Route path="/policy" element={<PrivacyPolicy/>} />
+      
+      {/* Rutas con tema */}
+      <Route path="/panel" element={
+        <ThemedContent>
+          <SidebarPanel />
+        </ThemedContent>
+      } />
+      <Route path="/login" element={
+        <ThemedContent>
+          <Login />
+        </ThemedContent>
+      } />
+      <Route path="/register" element={
+        <ThemedContent>
+          <Register />
+        </ThemedContent>
+      } />
+      <Route path="/user/:rut/edit" element={
+        <ThemedContent>
+          <UpdateUser />
+        </ThemedContent>
+      } />
+      <Route path="/user-view" element={
+        <ThemedContent>
+          <ViewUser />
+        </ThemedContent>
+      } />
+      <Route path="/user/:rut/details" element={
+        <ThemedContent>
+          <UserDetails />
+        </ThemedContent>
+      } />
+      <Route path="/family/register" element={
+        <ThemedContent>
+          <FamilyRegister />
+        </ThemedContent>
+      } />
+      <Route path="/create/news" element={
+        <ThemedContent>
+          <CreateNews />
+        </ThemedContent>
+      } />
+      <Route path="/read/news" element={
+        <ThemedContent>
+          <ViewNews />
+        </ThemedContent>
+      } />
+      <Route path="/maps" element={
+        <ThemedContent>
+          <MapaInteractive />
+        </ThemedContent>
+      } />
+      <Route path="/certificados/solicitar/" element={
+        <ThemedContent>
+          <CreateCertificationFrom />
+        </ThemedContent>
+      } />
+      <Route path="/certificados/check/" element={
+        <ThemedContent>
+          <CertificadoStatus />
+        </ThemedContent>
+      } />
+      <Route path="/noticias/:id/edit" element={
+        <ThemedContent>
+          <CreateNews />
+        </ThemedContent>
+      } />
+      
+      {/* Ruta 404 sin tema */}
+      <Route path="*" element={<Page404 />} />
+    </Routes>
   );
 };
 

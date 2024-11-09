@@ -168,7 +168,9 @@ export const FamilyRegister = () => {
           title: '¡Éxito!',
           text: 'Miembro de la familia registrado correctamente',
           icon: 'success',
-          confirmButtonText: 'Aceptar'
+          confirmButtonText: 'Aceptar',
+          timer: 2000,
+          timerProgressBar: true
         });
 
         // Limpiar el formulario después de un registro exitoso
@@ -189,7 +191,9 @@ export const FamilyRegister = () => {
         title: 'Error',
         text: errorMessage,
         icon: 'error',
-        confirmButtonText: 'Aceptar'
+        confirmButtonText: 'Aceptar',
+        timer: 5000,
+        timerProgressBar: true
       });
     } finally {
       setIsSubmitting(false);

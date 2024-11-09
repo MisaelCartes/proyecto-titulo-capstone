@@ -4,14 +4,18 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import dayjs from 'dayjs';
-import { FaClock, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaTimesCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+
 const CertificadoMoveStatus = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 15;
     const token = localStorage.getItem('token');
     const { themes } = useTheme();
-    // Status configuration object
+
     const statusConfig = {
         SOLICITADO: {
             icon: <FaClock size={20} className="text-yellow-500" />,
@@ -30,7 +34,6 @@ const CertificadoMoveStatus = () => {
         }
     };
 
-    // Function to get the status configuration securely
     const getStatusConfig = (status) => {
         const normalizedStatus = status?.toUpperCase();
         return statusConfig[normalizedStatus] || {
@@ -44,36 +47,141 @@ const CertificadoMoveStatus = () => {
 
     const fetchRequests = useCallback(async () => {
         try {
-
             const response = await axios.get(`http://127.0.0.1:8000/certificados/list/admin/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            return response.data;
+            
+            // Ordenar las solicitudes por ID de mayor a menor
+            const sortedRequests = response.data.sort((a, b) => b.id - a.id);
+            return sortedRequests;
         } catch (error) {
-            console.error('Error al obtener solicitudes:', error);
-            Swal.fire('Error', 'No se pudo cargar la lista de solicitudes.', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar la lista de solicitudes.',
+                confirmButtonColor: '#3085d6'
+            });
             throw error;
         }
     }, [token]);
 
-    const handleStatusChange = async (requestId, newStatus) => {
+    const getCurrentPageData = () => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return requests.slice(startIndex, endIndex);
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = 5;
+
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
+
+    const handleStatusChange = async (requestId, rut, newStatus) => {
         try {
-            await axios.put(
-                `http://127.0.0.1:8000/certificados/edit/${requestId}/`,
-                { status: newStatus },
-                { headers: { 'Authorization': `Bearer ${token}` } }
+            if (!newStatus) return;
+
+            // Mapeo de estados para el backend
+            const backendStatusMapping = {
+                'APROBADO': 'APPROVED',
+                'RECHAZADO': 'REJECTED'
+            };
+
+            Swal.fire({
+                title: 'Actualizando estado...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await axios.post(
+                'http://127.0.0.1:8000/certificados/change/status/',
+                {
+                    id: requestId,
+                    rut: rut,
+                    status: backendStatusMapping[newStatus]
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
 
-            setRequests(requests.map(request =>
-                request.id === requestId
-                    ? { ...request, status: newStatus }
-                    : request
-            ));
+            if (response.data.success) {
+                setRequests(requests.map(request =>
+                    request.id === requestId
+                        ? { ...request, status: newStatus }
+                        : request
+                ));
 
-            Swal.fire('Éxito', 'Estado actualizado correctamente', 'success');
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Estado actualizado!',
+                    text: 'El estado de la solicitud se ha actualizado correctamente.',
+                    confirmButtonColor: '#3085d6',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
         } catch (error) {
-            console.error('Error al actualizar estado:', error);
-            Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+            console.error('Error completo:', error.response?.data);
+            let errorMessage = 'No se pudo actualizar el estado de la solicitud.';
+            
+            if (error.response?.data?.error === 'Invalid status') {
+                errorMessage = 'Estado inválido. Por favor, seleccione un estado válido.';
+            } else if (error.response?.status === 404) {
+                errorMessage = 'La solicitud no fue encontrada o no puede ser actualizada.';
+            }
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonColor: '#3085d6',
+                timer: 2000,
+                timerProgressBar: true
+            });
+
+            fetchRequests()
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setRequests(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al recargar solicitudes:', error);
+                });
         }
     };
 
@@ -82,6 +190,7 @@ const CertificadoMoveStatus = () => {
             .then(data => {
                 if (Array.isArray(data)) {
                     setRequests(data);
+                    setTotalPages(Math.ceil(data.length / itemsPerPage));
                 } else {
                     throw new Error('Datos no son un array');
                 }
@@ -99,7 +208,6 @@ const CertificadoMoveStatus = () => {
             </div>
         );
     }
-
 
     return (
         <div className="flex-1 p-6 overflow-y-auto h-screen w-full mt-8" style={{ backgroundColor: themes.background }}>
@@ -119,51 +227,103 @@ const CertificadoMoveStatus = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto rounded-lg shadow-lg border-2 border-gray-600">
-                        <table className="min-w-full bg-gray-800 text-white">
-                            <thead>
-                                <tr className="bg-gray-900 border border-gray-700">
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">Usuario</th>
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">RUT</th>
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">Fecha de Creación</th>
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">Relación</th>
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">Estado</th>
-                                    <th className="py-3 px-4 text-left font-semibold text-gray-200">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-600">
-                                {requests.map((request) => (
-                                    <tr key={request.id} className="hover:bg-gray-700 transition-colors">
-                                        <td className="py-3 px-4 text-gray-300">{request.user}</td>
-                                        <td className="py-3 px-4 text-gray-300">{request.rut}</td>
-                                        <td className="py-3 px-4 text-gray-300">
-                                            {dayjs(request.dateCreation).format('DD/MM/YYYY : HH:mm:ss')}
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-300">{request.relationship}</td>
-                                        <td className="py-3 px-4 text-gray-300">
-                                            <div className="flex items-center gap-2">
-                                                {getStatusConfig(request.status).icon}
-                                                <span className={`${getStatusConfig(request.status).textColor} font-medium`}>
-                                                    {getStatusConfig(request.status).label}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <select
-                                                className="w-full px-3 py-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                value={request.status}
-                                                onChange={(e) => handleStatusChange(request.id, e.target.value)}
-                                            >
-                                                <option value="">Cambiar Estado</option>
-                                                <option value="approved">Aprobado</option>
-                                                <option value="rejected">Rechazado</option>
-                                            </select>
-                                        </td>
+                    <>
+                        <div className="overflow-x-auto rounded-lg shadow-lg border-2 border-gray-600 mb-4">
+                            <table className="min-w-full bg-gray-800 text-white">
+                                <thead>
+                                    <tr className="bg-gray-900 border border-gray-700">
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">N° Solicitud</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Usuario</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">RUT</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Fecha de Creación</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Relación</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Estado</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Acción</th>
                                     </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-600">
+                                    {getCurrentPageData().map((request) => (
+                                        <tr key={request.id} className="hover:bg-gray-700 transition-colors">
+                                            <td className="py-3 px-4 text-gray-300">{request.id.toString().padStart(4, '0')}</td>
+                                            <td className="py-3 px-4 text-gray-300">{request.user}</td>
+                                            <td className="py-3 px-4 text-gray-300">{request.rut}</td>
+                                            <td className="py-3 px-4 text-gray-300">
+                                                {dayjs(request.dateCreation).format('DD/MM/YYYY : HH:mm:ss')}
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-300">{request.relationship.toUpperCase()}</td>
+                                            <td className="py-3 px-4 text-gray-300">
+                                                <div className="flex items-center gap-2">
+                                                    {getStatusConfig(request.status).icon}
+                                                    <span className={`${getStatusConfig(request.status).textColor} font-medium`}>
+                                                        {getStatusConfig(request.status).label}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <select
+                                                    className="w-full px-3 py-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={request.status}
+                                                    onChange={(e) => handleStatusChange(request.id, request.rut, e.target.value)}
+                                                >
+                                                    <option value="">Cambiar Estado</option>
+                                                    <option value="APROBADO">Aprobado</option>
+                                                    <option value="RECHAZADO">Rechazado</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex justify-center items-center space-x-2 mt-4">
+                            <button
+                                onClick={handlePrevPage}
+                                disabled={currentPage === 1}
+                                className={`px-3 py-2 rounded-md ${
+                                    currentPage === 1
+                                        ? 'bg-gray-600 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700'
+                                } text-white flex items-center`}
+                            >
+                                <FaChevronLeft className="mr-1" />
+                                Anterior
+                            </button>
+
+                            <div className="flex space-x-1">
+                                {getPageNumbers().map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageChange(page)}
+                                        className={`px-4 py-2 rounded-md ${
+                                            currentPage === page
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </div>
+
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className={`px-3 py-2 rounded-md ${
+                                    currentPage === totalPages
+                                        ? 'bg-gray-600 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700'
+                                } text-white flex items-center`}
+                            >
+                                Siguiente
+                                <FaChevronRight className="ml-1" />
+                            </button>
+                        </div>
+
+                        <div className="text-center mt-2 text-gray-400">
+                            Página {currentPage} de {totalPages} | Total de solicitudes: {requests.length}
+                        </div>
+                    </>
                 )}
             </div>
         </div>

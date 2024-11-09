@@ -96,6 +96,8 @@ const Register = () => {
         icon: 'success',
         title: 'Registro exitoso',
         text: 'El usuario ha sido registrado correctamente.',
+        timer: 2000,
+        timerProgressBar: true
       });
       
       navigate('/panel');
@@ -109,12 +111,16 @@ const Register = () => {
           icon: 'error',
           title: 'Error en el registro',
           text: error.response.data.rut[0], // Mensaje de error del servidor
+          timer: 5000,
+          timerProgressBar: true
         });
       } else {
         Swal.fire({
           icon: 'error',
           title: 'Error en el registro',
           text: "Hubo un error al registrar al usuario. Inténtalo de nuevo más tarde.",
+          timer: 5000,
+          timerProgressBar: true
         });
       }
 

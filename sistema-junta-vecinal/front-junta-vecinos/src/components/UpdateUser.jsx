@@ -69,6 +69,8 @@ const UpdateUser = () => {
                     text: "Ocurrió un error al cargar los datos del usuario.",
                     icon: "error",
                     confirmButtonText: "Aceptar",
+                    timer: 5000,
+                    timerProgressBar: true
                 });
             });
 
@@ -168,6 +170,8 @@ const UpdateUser = () => {
                     text: "Los datos del usuario se han actualizado correctamente.",
                     icon: "success",
                     confirmButtonText: "Aceptar",
+                    timer: 2000,
+                    timerProgressBar: true
                 });
                 navigate('/panel');
             })
@@ -179,6 +183,8 @@ const UpdateUser = () => {
                     text: errorMessage,
                     icon: "error",
                     confirmButtonText: "Aceptar",
+                    timer: 5000,
+                    timerProgressBar: true
                 });
             })
             .finally(() => {

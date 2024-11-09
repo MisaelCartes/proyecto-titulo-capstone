@@ -146,7 +146,7 @@ export default function Footer() {
 
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <p className="text-gray-400 text-sm w-3/4">
-                        &copy; {anioActual} Junta Vecinal Digital. Todos los derechos reservados. Este portal está diseñado para facilitar la comunicación entre los vecinos y la junta directiva, promover la participación comunitaria y ofrecer un acceso rápido y eficiente a trámites, eventos y noticias. Al utilizar este sitio, aceptas nuestros <a href="#" className="text-indigo-500 hover:underline">términos y condiciones</a> y nuestra <a href="#" className="text-indigo-500 hover:underline">política de privacidad</a>. Todos los contenidos y servicios están protegidos por las leyes aplicables.
+                        &copy; {anioActual} Junta Vecinal Digital. Todos los derechos reservados. Este portal está diseñado para facilitar la comunicación entre los vecinos y la junta directiva, promover la participación comunitaria y ofrecer un acceso rápido y eficiente a trámites, eventos y noticias. Al utilizar este sitio, aceptas nuestros <a href="/terms-privacy" className="text-indigo-500 hover:underline">términos y condiciones</a> y nuestra <a href="/policy" className="text-indigo-500 hover:underline">política de privacidad</a>. Todos los contenidos y servicios están protegidos por las leyes aplicables.
                     </p>
                     <div className="flex space-x-4 mt-4 md:mt-0">
                         {REDES_SOCIALES.map(({ nombre, url }) => (

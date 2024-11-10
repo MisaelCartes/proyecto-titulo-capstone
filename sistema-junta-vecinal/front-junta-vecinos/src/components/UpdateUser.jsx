@@ -4,15 +4,12 @@ import Swal from "sweetalert2";
 import validarRut from '../middlewares/validarRut';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaUser } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
-
 
 const UpdateUser = () => {
     const { themes } = useTheme();
-
     const { rut } = useParams();
-    console.log("rut params: ", rut)
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -23,181 +20,237 @@ const UpdateUser = () => {
         password: "",
         housingType: "",
         photo: null,
+        photoUrl: "", // Para mostrar la foto actual
     });
 
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false); // Estado de carga
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
-    useValidateRoleAndAccessToken(['1', '2'], '/login')
+    useValidateRoleAndAccessToken(['1', '2'], '/login');
+
+    const isValidCharacter = (value) => /^[A-Za-zÀ-ÿ\s]+$/.test(value);
+    const isValidChileanPhoneNumber = (phone) => /^9\d{8}$/.test(phone);
 
     useEffect(() => {
-        // Obtener datos del usuario enviando el RUT en el cuerpo de la solicitud GET
-        axios({
-            method: 'get',
-            url: 'http://127.0.0.1:8000/user/list/one/',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            params: {
-                rut: rut
-            },
-        })
-            .then((response) => {
-                console.log("Datos del usuario recibidos:", response.data);
+        const fetchUserData = async () => {
+            try {
+                const response = await axios({
+                    method: 'get',
+                    url: 'http://127.0.0.1:8000/user/list/one/',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    params: { rut }
+                });
 
                 const user = response.data;
                 setFormData({
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    motherLastName: user.motherLastName,
-                    rut: user.rut,
-                    address: user.address,
-                    phoneNumber: user.phoneNumber,
-                    email: user.email,
-                    password: "", // No pre-cargar la contraseña
-                    housingType: user.housingType,
-                    photo: user.photo,
+                    ...user,
+                    password: "",
+                    photoUrl: user.photo || "" // Guardar la URL de la foto actual
                 });
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error("Error al cargar los datos del usuario:", error);
                 Swal.fire({
-                    title: "Error",
-                    text: "Ocurrió un error al cargar los datos del usuario.",
                     icon: "error",
-                    confirmButtonText: "Aceptar",
-                    timer: 5000,
+                    title: "Error",
+                    text: "No se pudieron cargar los datos del usuario",
+                    timer: 3000,
                     timerProgressBar: true
                 });
-            });
+            }
+        };
 
-    }, [navigate, rut]);
-
-    const isValidCharacter = (input) => /^[a-zA-ZÀ-ÿ\s]+$/.test(input);
-    const isValidChileanPhoneNumber = (number) => /^9\d{8}$/.test(number);
+        fetchUserData();
+    }, [rut, token]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+
+        // Limpiar error cuando el usuario empieza a escribir
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+
+        // Manejo especial para RUT
+        if (name === 'rut') {
+            const rutClean = value.replace(/[^0-9kK\.-]/g, '');
+            setFormData(prev => ({ ...prev, [name]: rutClean }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleFileChange = (e) => {
-        setFormData({ ...formData, photo: e.target.files[0] });
+        const file = e.target.files[0];
+        if (file) {
+            // Validar tipo de archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                setErrors(prev => ({
+                    ...prev,
+                    photo: "Solo se permiten archivos JPG, JPEG o PNG"
+                }));
+                return;
+            }
+
+            // Validar tamaño (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setErrors(prev => ({
+                    ...prev,
+                    photo: "La imagen no debe superar los 5MB"
+                }));
+                return;
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                photo: file,
+                photoUrl: URL.createObjectURL(file) // Crear URL temporal para preview
+            }));
+        }
     };
 
-    const validateFormData = () => {
+    const validateForm = () => {
         const newErrors = {};
 
-        // Validar campos
-        if (!formData.firstName) newErrors.firstName = "El nombre es obligatorio";
-        else if (!isValidCharacter(formData.firstName)) newErrors.firstName = "El nombre solo puede contener letras.";
-        else if (formData.firstName.length < 2 || formData.firstName.length > 30) newErrors.firstName = "El nombre debe tener entre 2 y 30 caracteres.";
+        // Validación nombre
+        if (!formData.firstName) {
+            newErrors.firstName = "El nombre es obligatorio";
+        } else if (!isValidCharacter(formData.firstName)) {
+            newErrors.firstName = "El nombre solo puede contener letras";
+        } else if (formData.firstName.length < 3) {
+            newErrors.firstName = "El nombre debe tener al menos 3 caracteres";
+        } else if (formData.firstName.length > 30) {
+            newErrors.firstName = "El nombre no puede tener más de 30 caracteres";
+        }
 
-        if (!formData.lastName) newErrors.lastName = "El apellido paterno es obligatorio";
-        else if (!isValidCharacter(formData.lastName)) newErrors.lastName = "El apellido solo puede contener letras.";
-        else if (formData.lastName.length < 2 || formData.lastName.length > 30) newErrors.lastName = "El apellido debe tener entre 2 y 30 caracteres.";
+        // Validación apellido paterno
+        if (!formData.lastName) {
+            newErrors.lastName = "El apellido paterno es obligatorio";
+        } else if (!isValidCharacter(formData.lastName)) {
+            newErrors.lastName = "El apellido solo puede contener letras";
+        } else if (formData.lastName.length < 3) {
+            newErrors.lastName = "El apellido debe tener al menos 3 caracteres";
+        } else if (formData.lastName.length > 30) {
+            newErrors.lastName = "El apellido no puede tener más de 30 caracteres";
+        }
 
-        if (formData.motherLastName && formData.motherLastName.length >= 2) {
+        // Validación apellido materno (opcional)
+        if (formData.motherLastName) {
             if (!isValidCharacter(formData.motherLastName)) {
-                newErrors.motherLastName = "El apellido materno solo puede contener letras.";
+                newErrors.motherLastName = "El apellido materno solo puede contener letras";
+            } else if (formData.motherLastName.length < 3) {
+                newErrors.motherLastName = "El apellido materno debe tener al menos 3 caracteres";
             } else if (formData.motherLastName.length > 30) {
-                newErrors.motherLastName = "El apellido materno debe tener como máximo 30 caracteres.";
+                newErrors.motherLastName = "El apellido materno no puede tener más de 30 caracteres";
             }
         }
 
-        if (!formData.rut) newErrors.rut = "El RUT es obligatorio";
-        else if (!validarRut(formData.rut)) newErrors.rut = "RUT inválido";
-
-        if (!formData.address) newErrors.address = "La dirección es obligatoria";
-        else if (formData.address.length < 5 || formData.address.length > 100) newErrors.address = "La dirección debe tener entre 5 y 100 caracteres.";
-
-        if (!formData.phoneNumber) newErrors.phoneNumber = "El número de teléfono es obligatorio";
-        else if (!isValidChileanPhoneNumber(formData.phoneNumber)) {
-            newErrors.phoneNumber = "El número de teléfono chileno debe comenzar con 9 y tener 9 dígitos.";
+        // Validación dirección
+        if (!formData.address) {
+            newErrors.address = "La dirección es obligatoria";
+        } else if (formData.address.length < 3) {
+            newErrors.address = "La dirección debe tener al menos 3 caracteres";
+        } else if (formData.address.length > 100) {
+            newErrors.address = "La dirección no puede tener más de 100 caracteres";
         }
 
-        if (!formData.email) newErrors.email = "El correo electrónico es obligatorio";
-        else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "El correo electrónico no es válido.";
+        // Validación teléfono
+        if (!formData.phoneNumber) {
+            newErrors.phoneNumber = "El número de teléfono es obligatorio";
+        } else if (!isValidChileanPhoneNumber(formData.phoneNumber)) {
+            newErrors.phoneNumber = "Debe ser un número chileno válido (9 dígitos comenzando con 9)";
+        }
 
-        if (formData.password && formData.password.length >= 2) {
-            if (formData.password.length > 30) {
-                newErrors.password = "El password debe tener al menos 6 caracteres.";
+        // Validación email
+        if (!formData.email) {
+            newErrors.email = "El correo electrónico es obligatorio";
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "El correo electrónico no es válido";
+        }
+
+        // Validación contraseña (opcional en actualización)
+        if (formData.password) {
+            if (formData.password.length < 6) {
+                newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+            } else if (formData.password.length > 30) {
+                newErrors.password = "La contraseña no puede tener más de 30 caracteres";
             }
         }
-
 
         return newErrors;
     };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrors({});
-        const newErrors = validateFormData();
+        const validationErrors = validateForm();
 
-        // Si hay errores, establecerlos en el estado y no enviar el formulario
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            const firstError = Object.values(validationErrors)[0];
+            // Swal.fire({
+            //     icon: 'error',
+            //     title: 'Error de validación',
+            //     text: firstError,
+            //     timer: 3000,
+            //     timerProgressBar: true
+            // });
+            console.log(firstError)
             return;
         }
 
-        setLoading(true); // Activar indicador de carga
-
-        // Enviar los datos actualizados
-        axios.put(`http://127.0.0.1:8000/user/edit/`, {
-            rut: formData.rut,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            motherLastName: formData.motherLastName,
-            password: formData.password,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            address: formData.address,
-            housingType: formData.housingType,
-            photo: formData.photo,
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        }
-        )
-            .then(() => {
-                Swal.fire({
-                    title: "Actualización exitosa",
-                    text: "Los datos del usuario se han actualizado correctamente.",
-                    icon: "success",
-                    confirmButtonText: "Aceptar",
-                    timer: 2000,
-                    timerProgressBar: true
-                });
-                navigate('/panel');
-            })
-            .catch((error) => {
-                console.error("Error al actualizar el usuario:", error);
-                const errorMessage = error.response ? error.response.data.message : "Ocurrió un error al actualizar los datos del usuario.";
-                Swal.fire({
-                    title: "Error",
-                    text: errorMessage,
-                    icon: "error",
-                    confirmButtonText: "Aceptar",
-                    timer: 5000,
-                    timerProgressBar: true
-                });
-            })
-            .finally(() => {
-                setLoading(false); // Desactivar indicador de carga
+        setLoading(true);
+        try {
+            // Crear FormData para manejar la imagen
+            const formDataToSend = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key === 'photo') {
+                    if (formData.photo instanceof File) {
+                        formDataToSend.append('photo', formData.photo);
+                    }
+                } else if (key !== 'photoUrl') {  // No enviar la URL de la foto
+                    formDataToSend.append(key, formData[key]);
+                }
             });
+
+            await axios.put(`http://127.0.0.1:8000/user/edit/`, formDataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            Swal.fire({
+                title: "¡Actualización exitosa!",
+                text: "Los datos se han actualizado correctamente",
+                icon: "success",
+                timer: 2000,
+                timerProgressBar: true
+            });
+
+            navigate('/panel');
+        } catch (error) {
+            console.error("Error al actualizar:", error);
+            Swal.fire({
+                title: "Error",
+                text: error.response?.data?.message || "Error al actualizar los datos",
+                icon: "error",
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: themes.background }}>
             <div className="sm:mx-auto sm:w-full sm:max-w-3xl">
                 <div className="bg-gray-800 px-8 py-10 rounded-lg">
-                    {/* Botón de Volver dentro del form y alineado a la izquierda */}
-                    <div className="mb-6 text-left">
+                    <div className="mb-6 flex justify-between items-center">
                         <NavLink
                             to="/panel"
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
@@ -205,6 +258,24 @@ const UpdateUser = () => {
                             <FaArrowLeft className="mr-2" />
                             Volver
                         </NavLink>
+
+                        {/* Avatar/Foto del usuario */}
+                        <div className="flex flex-col items-center">
+                            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-500 mb-2">
+                                {formData.photoUrl ? (
+                                    <img
+                                        src={formData.photoUrl}
+                                        alt="Foto de perfil"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                        <FaUser className="text-gray-400 text-3xl" />
+                                    </div>
+                                )}
+                            </div>
+                            <span className="text-sm text-gray-400">Foto de perfil</span>
+                        </div>
                     </div>
 
                     <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
@@ -212,6 +283,7 @@ const UpdateUser = () => {
                     </h2>
 
                     <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
+                        {/* Nombre */}
                         <div>
                             <label htmlFor="firstName" className="block text-sm font-medium leading-6 text-white">
                                 Nombre
@@ -221,16 +293,19 @@ const UpdateUser = () => {
                                     id="firstName"
                                     name="firstName"
                                     type="text"
+                                    placeholder="Mínimo 3 caracteres"
                                     value={formData.firstName}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                             </div>
                         </div>
 
-                        {/* Repite el mismo patrón para cada campo del formulario */}
+                        {/* Apellido Paterno */}
                         <div>
                             <label htmlFor="lastName" className="block text-sm font-medium leading-6 text-white">
                                 Apellido Paterno
@@ -240,15 +315,19 @@ const UpdateUser = () => {
                                     id="lastName"
                                     name="lastName"
                                     type="text"
+                                    placeholder="Mínimo 3 caracteres"
                                     value={formData.lastName}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.lastName ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                             </div>
                         </div>
 
+                        {/* Apellido Materno */}
                         <div>
                             <label htmlFor="motherLastName" className="block text-sm font-medium leading-6 text-white">
                                 Apellido Materno
@@ -258,15 +337,18 @@ const UpdateUser = () => {
                                     id="motherLastName"
                                     name="motherLastName"
                                     type="text"
+                                    placeholder="Opcional (mínimo 3 caracteres)"
                                     value={formData.motherLastName}
                                     onChange={handleChange}
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.motherLastName ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.motherLastName && <p className="text-red-500 text-xs mt-1">{errors.motherLastName}</p>}
                             </div>
                         </div>
 
-                        {/* Continúa con el mismo patrón para RUT, dirección, teléfono, email, contraseña y foto */}
+                        {/* RUT */}
                         <div>
                             <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
                                 RUT
@@ -276,15 +358,19 @@ const UpdateUser = () => {
                                     id="rut"
                                     name="rut"
                                     type="text"
+                                    placeholder="12345678-9"
                                     value={formData.rut}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    disabled
+                                    className="block w-full rounded-md bg-gray-600 py-2 px-3 text-gray-400 placeholder:text-gray-500 border-0 
+                                        cursor-not-allowed sm:text-sm sm:leading-6"
                                 />
                                 {errors.rut && <p className="text-red-500 text-xs mt-1">{errors.rut}</p>}
                             </div>
                         </div>
 
+                        {/* Dirección */}
                         <div>
                             <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
                                 Dirección
@@ -294,15 +380,19 @@ const UpdateUser = () => {
                                     id="address"
                                     name="address"
                                     type="text"
+                                    placeholder="Mínimo 3 caracteres"
                                     value={formData.address}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.address ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                             </div>
                         </div>
 
+                        {/* Teléfono */}
                         <div>
                             <label htmlFor="phoneNumber" className="block text-sm font-medium leading-6 text-white">
                                 Teléfono
@@ -312,15 +402,19 @@ const UpdateUser = () => {
                                     id="phoneNumber"
                                     name="phoneNumber"
                                     type="text"
+                                    placeholder="987654321"
                                     value={formData.phoneNumber}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.phoneNumber ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
                             </div>
                         </div>
 
+                        {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
                                 Correo Electrónico
@@ -330,61 +424,86 @@ const UpdateUser = () => {
                                     id="email"
                                     name="email"
                                     type="email"
+                                    placeholder="ejemplo@correo.com"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                             </div>
                         </div>
 
+                        {/* Contraseña */}
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
-                                Contraseña
+                                Nueva Contraseña (opcional)
                             </label>
                             <div className="mt-2">
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
+                                    placeholder="Mínimo 6 caracteres"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                                        focus:ring-2 focus:ring-inset ${errors.password ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                                        sm:text-sm sm:leading-6`}
                                 />
                                 {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                             </div>
                         </div>
 
+                        {/* Foto */}
                         <div>
                             <label htmlFor="photo" className="block text-sm font-medium leading-6 text-white">
-                                Foto (opcional)
+                                Actualizar foto
                             </label>
                             <div className="mt-2">
                                 <input
                                     id="photo"
                                     name="photo"
                                     type="file"
+                                    accept="image/*"
                                     onChange={handleFileChange}
-                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                    className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white
+                                            file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold file:bg-blue-600 
+                                            file:text-white hover:file:bg-blue-700"
                                 />
+                                {errors.photo && <p className="text-red-500 text-xs mt-1">{errors.photo}</p>}
                             </div>
                         </div>
 
+                        {/* Botón de submit */}
                         <div className="sm:col-span-2">
                             <button
                                 type="submit"
-                                className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                                disabled={loading}
+                                className={`flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm
+                                    ${loading ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                                    focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600`}
                             >
-                                Actualizar cuenta
+                                {loading ? (
+                                    <div className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Actualizando...
+                                    </div>
+                                ) : (
+                                    'Actualizar cuenta'
+                                )}
                             </button>
-                            {errors.submit && <p className="text-red-500 text-xs mt-1">{errors.submit}</p>}
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-
     );
 };
 

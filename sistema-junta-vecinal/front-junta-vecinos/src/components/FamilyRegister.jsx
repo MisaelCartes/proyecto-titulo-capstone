@@ -5,8 +5,6 @@ import validarRut from '../middlewares/validarRut';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { jwtDecode } from 'jwt-decode';
 import { useTheme } from '../context/ThemeContext';
-import { NavLink } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
 
 const BASE_URL = 'http://127.0.0.1:8000'; // URL base de la API
 
@@ -80,14 +78,14 @@ export const FamilyRegister = () => {
 
     if (!formData.firstName?.trim()) {
       newErrors.firstName = 'Nombre es requerido';
-    } else if (formData.firstName.length < 2) {
-      newErrors.firstName = 'Nombre debe tener al menos 2 caracteres';
+    } else if (formData.firstName.length < 3) {
+      newErrors.firstName = 'Nombre debe tener al menos 3 caracteres';
     }
 
     if (!formData.lastName?.trim()) {
       newErrors.lastName = 'Apellido es requerido';
-    } else if (formData.lastName.length < 2) {
-      newErrors.lastName = 'Apellido debe tener al menos 2 caracteres';
+    } else if (formData.lastName.length < 3) {
+      newErrors.lastName = 'Apellido debe tener al menos 3 caracteres';
     }
 
     if (!formData.relationship?.trim()) {
@@ -144,12 +142,13 @@ export const FamilyRegister = () => {
 
     if (!validateForm()) {
       const errorMessages = Object.values(errors).join('\n');
-      Swal.fire({
-        title: 'Error de Validación',
-        text: 'Por favor, corrija los siguientes errores:\n' + errorMessages,
-        icon: 'error',
-        confirmButtonText: 'Entendido'
-      });
+      // Swal.fire({
+      //   title: 'Error de Validación',
+      //   text: 'Por favor, corrija los siguientes errores:\n' + errorMessages,
+      //   icon: 'error',
+      //   confirmButtonText: 'Entendido'
+      // });
+      console.log(errorMessages)
       return;
     }
 
@@ -204,13 +203,13 @@ export const FamilyRegister = () => {
     <div className="flex-1 p-6 overflow-y-auto h-screen w-full mt-8" style={{ backgroundColor: themes.background }}>
       <div className="max-w-3xl rounded-lg p-8 mx-auto bg-gray-800">
         <h2 className="mb-8 text-center text-2xl font-bold leading-9 text-white">
-          Registra un miembro de la familia
+          Registra un integrante de la familia
         </h2>
 
         <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="rutMember" className="block text-sm font-medium leading-6 text-white">
-              RUT del miembro
+              Rut del integrante
             </label>
             <div className="mt-2">
               <input

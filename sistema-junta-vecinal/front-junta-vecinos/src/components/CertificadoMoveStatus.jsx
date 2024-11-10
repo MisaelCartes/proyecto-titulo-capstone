@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import {formatRut} from '../middlewares/formatRut'
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import dayjs from 'dayjs';
 import { FaClock, FaCheckCircle, FaTimesCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -233,9 +233,9 @@ const CertificadoMoveStatus = () => {
                                 <thead>
                                     <tr className="bg-gray-900 border border-gray-700">
                                         <th className="py-3 px-4 text-left font-semibold text-gray-200">N° Solicitud</th>
-                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Usuario</th>
-                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">RUT</th>
-                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Fecha de Creación</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Nombre Completo</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Rut</th>
+                                        <th className="py-3 px-4 text-left font-semibold text-gray-200">Fecha de Solicitud</th>
                                         <th className="py-3 px-4 text-left font-semibold text-gray-200">Relación</th>
                                         <th className="py-3 px-4 text-left font-semibold text-gray-200">Estado</th>
                                         <th className="py-3 px-4 text-left font-semibold text-gray-200">Acción</th>
@@ -246,7 +246,7 @@ const CertificadoMoveStatus = () => {
                                         <tr key={request.id} className="hover:bg-gray-700 transition-colors">
                                             <td className="py-3 px-4 text-gray-300">{request.id.toString().padStart(4, '0')}</td>
                                             <td className="py-3 px-4 text-gray-300">{request.user}</td>
-                                            <td className="py-3 px-4 text-gray-300">{request.rut}</td>
+                                            <td className="py-3 px-4 text-gray-300">{formatRut(request.rut)}</td>
                                             <td className="py-3 px-4 text-gray-300">
                                                 {dayjs(request.dateCreation).format('DD/MM/YYYY : HH:mm:ss')}
                                             </td>

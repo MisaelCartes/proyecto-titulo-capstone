@@ -9,6 +9,8 @@ import { useTheme } from '../context/ThemeContext';
 export const CreateNews = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { themes } = useTheme();
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -18,21 +20,16 @@ export const CreateNews = () => {
     dateVigencia: '',
     category: '',
   });
-  const { themes } = useTheme();
-
-  const handleBack = () => {
-    // Navegar a la página anterior
-    navigate(-1);
-  };
-  const token = localStorage.getItem('token');
   const [imageFile, setImageFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [rol, setRol] = useState(null);
 
-  const checkUserRole = () => {
-    const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
+  const handleBack = () => navigate(-1);
+
+  const checkUserRole = () => {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
@@ -51,52 +48,72 @@ export const CreateNews = () => {
     }
   };
 
-  useEffect(() => {
-    checkUserRole();
+  const validateForm = () => {
+    const newErrors = {};
 
-    if (id) {
-      setIsEditing(true);
-      axios
-        .get(`http://127.0.0.1:8000/obtener/noticia/`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { id }
-        })
-        .then((response) => {
-          const { title, description, source, author, publishedAt, dateVigencia, category } = response.data;
-          // Formatear las fechas para el input datetime-local
-          const formattedPublishedAt = dayjs(publishedAt).format('YYYY-MM-DDTHH:mm');
-          const formattedDateVigencia = dayjs(dateVigencia).format('YYYY-MM-DDTHH:mm');
-
-          setFormData({
-            title,
-            description,
-            source,
-            author,
-            publishedAt: formattedPublishedAt,
-            dateVigencia: formattedDateVigencia,
-            category,
-          });
-        })
-        .catch((error) => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error al cargar la noticia',
-            text: 'No se pudo cargar la noticia. Inténtalo más tarde.',
-            timer: 5000,
-            timerProgressBar: true
-          });
-        });
+    if (!formData.title) {
+      newErrors.title = "El título es obligatorio";
+    } else if (formData.title.length < 10) {
+      newErrors.title = "El título debe tener al menos 10 caracteres";
+    } else if (formData.title.length > 100) {
+      newErrors.title = "El título no puede exceder los 100 caracteres";
     }
-  }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    if (!formData.description) {
+      newErrors.description = "La descripción es obligatoria";
+    } else if (formData.description.length < 50) {
+      newErrors.description = "La descripción debe tener al menos 50 caracteres";
+    } else if (formData.description.length > 1000) {
+      newErrors.description = "La descripción no puede exceder los 1000 caracteres";
+    }
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
+    if (!formData.source) {
+      newErrors.source = "La fuente es obligatoria";
+    } else if (formData.source.length < 3) {
+      newErrors.source = "La fuente debe tener al menos 3 caracteres";
+    } else if (formData.source.length > 50) {
+      newErrors.source = "La fuente no puede exceder los 50 caracteres";
+    }
+
+    if (!formData.author) {
+      newErrors.author = "El autor es obligatorio";
+    } else if (formData.author.length < 3) {
+      newErrors.author = "El autor debe tener al menos 3 caracteres";
+    } else if (formData.author.length > 50) {
+      newErrors.author = "El autor no puede exceder los 50 caracteres";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "La categoría es obligatoria";
+    } else if (formData.category.length < 3) {
+      newErrors.category = "La categoría debe tener al menos 3 caracteres";
+    } else if (formData.category.length > 30) {
+      newErrors.category = "La categoría no puede exceder los 30 caracteres";
+    }
+
+    const now = dayjs();
+    const publishedAt = dayjs(formData.publishedAt);
+    const dateVigencia = dayjs(formData.dateVigencia);
+
+    if (!formData.dateVigencia) {
+      newErrors.dateVigencia = "La fecha de vigencia es obligatoria";
+    } else if (dateVigencia.isBefore(publishedAt)) {
+      newErrors.dateVigencia = "La fecha de vigencia debe ser posterior a la fecha de publicación";
+    }
+
+    if (!isEditing && !imageFile) {
+      newErrors.urlToImage = "La imagen es obligatoria";
+    } else if (imageFile) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (!validTypes.includes(imageFile.type)) {
+        newErrors.urlToImage = "Solo se permiten imágenes en formato JPG, PNG o WEBP";
+      }
+      if (imageFile.size > 5 * 1024 * 1024) {
+        newErrors.urlToImage = "La imagen no debe superar los 5MB";
+      }
+    }
+
+    return newErrors;
   };
 
   // Función para el formato de edición
@@ -110,17 +127,76 @@ export const CreateNews = () => {
     const date = dayjs(dateString);
     return date.format('YYYY-MM-DD HH:mm'); // Formato para creación
   };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        setErrors(prev => ({
+          ...prev,
+          urlToImage: "Solo se permiten imágenes en formato JPG, PNG o WEBP"
+        }));
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          urlToImage: "La imagen no debe superar los 5MB"
+        }));
+        return;
+      }
+      setImageFile(file);
+      setErrors(prev => ({ ...prev, urlToImage: '' }));
+    }
+  };
+
+  useEffect(() => {
+    checkUserRole();
+
+    if (id) {
+      setIsEditing(true);
+      axios
+        .get(`http://127.0.0.1:8000/obtener/noticia/`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id }
+        })
+        .then((response) => {
+          const { title, description, source, author, publishedAt, dateVigencia, category } = response.data;
+          setFormData({
+            title,
+            description,
+            source,
+            author,
+            publishedAt: dayjs(publishedAt).format('YYYY-MM-DDTHH:mm'),
+            dateVigencia: dayjs(dateVigencia).format('YYYY-MM-DDTHH:mm'),
+            category,
+          });
+        })
+        .catch(() => {
+          Swal.fire('Error', 'No se pudo cargar la noticia. Inténtalo más tarde.', 'error');
+        });
+    }
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
-
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+     
+  
     const dataToSend = new FormData();
-    dataToSend.append('title', formData.title);
-    dataToSend.append('description', formData.description);
-    dataToSend.append('source', formData.source);
-    dataToSend.append('author', formData.author);
-
+    Object.entries(formData).forEach(([key, value]) => {
+      dataToSend.append(key, value);
+    });
     // Usar el formato según el caso (edición o creación)
     if (isEditing) {
       dataToSend.append('publishedAt', formatDateForAPIEdit(formData.publishedAt));
@@ -129,20 +205,15 @@ export const CreateNews = () => {
       dataToSend.append('publishedAt', formatDateForAPICreate(formData.publishedAt));
       dataToSend.append('dateVigencia', formatDateForAPICreate(formData.dateVigencia));
     }
-    dataToSend.append('category', formData.category);
-    if (imageFile) {
-      dataToSend.append('urlToImage', imageFile);
-    }
-    if (isEditing) {
-      dataToSend.append('id', id);
-    }
+    if (imageFile) dataToSend.append('urlToImage', imageFile);
+    if (isEditing) dataToSend.append('id', id);
 
     try {
       const endpoint = isEditing
         ? `http://127.0.0.1:8000/editar/noticia/`
         : `http://127.0.0.1:8000/crear/noticias/`;
 
-      const response = await axios({
+      await axios({
         method: isEditing ? 'PUT' : 'POST',
         url: endpoint,
         data: dataToSend,
@@ -152,35 +223,11 @@ export const CreateNews = () => {
         },
       });
 
-      Swal.fire({
-        icon: 'success',
-        title: isEditing ? 'Noticia editada' : 'Noticia creada',
-        text: `La noticia ha sido ${isEditing ? 'editada' : 'creada'} exitosamente.`,
-        timer: 2000,
-        timerProgressBar: true
-      });
-
-      navigate('/panel'); // Redirigir después de crear/editar exitosamente
+      Swal.fire('Éxito', `Noticia ${isEditing ? 'editada' : 'creada'} correctamente.`, 'success');
+      navigate('/panel');
 
     } catch (error) {
-      if (error.response && error.response.data) {
-        setErrors(error.response.data);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.response.data.error || 'Hubo un problema al procesar la solicitud.',
-          timer: 5000,
-          timerProgressBar: true
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Hubo un problema al procesar la solicitud. Por favor, intenta nuevamente.',
-          timer: 5000,
-          timerProgressBar: true
-        });
-      }
+      Swal.fire('Error', error.response?.data?.error || 'Hubo un problema al procesar la solicitud.', 'error');
     }
   };
 

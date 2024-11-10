@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { FaShieldAlt, FaUserLock, FaDatabase, FaUsersCog, FaExclamationTriangle, 
          FaCheck, FaHandshake, FaChevronDown, FaChevronUp, FaLock, FaServer,
          FaUserShield, FaCookieBite } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
 
 const PrivacyPolicy = () => {
     const [activeSection, setActiveSection] = useState(null);
-    const { themes } = useTheme();
 
     const toggleSection = (index) => {
         setActiveSection(activeSection === index ? null : index);
@@ -167,7 +165,7 @@ const PrivacyPolicy = () => {
     };
 
     return (
-        <div className="flex-1 p-6 overflow-y-auto h-screen w-full" style={{ backgroundColor: themes.background }}>
+        <div className="flex-1 p-6 overflow-y-auto h-screen w-full">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-8 text-white shadow-xl">
@@ -207,7 +205,7 @@ const PrivacyPolicy = () => {
                 <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-green-500">
                         <FaCheck />
-                        <span>Última actualización: Noviembre 2023</span>
+                        <span>Última actualización: Noviembre 2024</span>
                     </div>
                     <span className="text-gray-400 text-sm">Versión 2.0</span>
                 </div>

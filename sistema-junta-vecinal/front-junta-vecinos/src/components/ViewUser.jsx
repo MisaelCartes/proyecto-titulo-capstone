@@ -4,6 +4,8 @@ import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { useTheme } from '../context/ThemeContext';
+import {formatRut} from '../middlewares/formatRut'
+
 
 const BASE_URL = 'http://127.0.0.1:8000';
 
@@ -111,7 +113,7 @@ const ViewUser = () => {
                         {users.map((user, index) => (
                             <tr key={index} className="hover:bg-gray-700 transition-colors">
                                 <td className="py-3 px-4 text-gray-300">{`${user.firstName} ${user.lastName} ${user.motherLastName}`}</td>
-                                <td className="py-3 px-4 text-gray-300">{user.rut}</td>
+                                <td className="py-3 px-4 text-gray-300">{formatRut(user.rut)}</td>
                                 <td className="py-3 px-4 text-gray-300">{user.email}</td>
                                 <td className="py-3 px-4 text-gray-300">{user.role === 1 ? 'Admin' : 'Miembro'}</td>
                                 <td className="py-3 px-4 text-gray-300">

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { useTheme } from '../context/ThemeContext';
 import { jwtDecode } from 'jwt-decode';
+import {formatRut} from '../middlewares/formatRut'
+
 
 const BASE_URL = 'http://127.0.0.1:8000';
 
@@ -38,9 +40,9 @@ const FamilyMemberDetails = () => {
 
     const getRoleName = (role) => {
         switch (role) {
-            case '1':
+            case 1:
                 return 'Admin';
-            case '2':
+            case 2:
                 return 'Miembro';
             default:
                 return role;
@@ -114,7 +116,7 @@ const FamilyMemberDetails = () => {
                             <label className="mb-1 text-gray-400 font-semibold">Rut</label>
                             <input
                                 type="text"
-                                value={user.rut}
+                                value={formatRut(user.rut)}
                                 disabled
                                 className="bg-gray-700 text-white p-2 rounded-lg border border-gray-600 focus:outline-none"
                             />
@@ -180,11 +182,11 @@ const FamilyMemberDetails = () => {
                             <tbody className="divide-y divide-gray-700">
                                 {familyMembers.map((member, index) => (
                                     <tr key={index} className="hover:bg-gray-700 transition-colors">
-                                        <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.rut}</td>
+                                        <td className="py-3 px-4 border border-gray-700 text-gray-300">{formatRut(member.rut)}</td>
                                         <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.firstName}</td>
                                         <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.lastName}</td>
                                         <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.relationship}</td>
-                                        <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.family}</td>
+                                        <td className="py-3 px-4 border border-gray-700 text-gray-300">{member.family.toString().padStart(4, '0')}</td>
                                     </tr>
                                 ))}
                             </tbody>

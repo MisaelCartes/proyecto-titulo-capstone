@@ -5,11 +5,9 @@ import {
     FaMapMarkerAlt, FaClock, FaIdCard, FaHome, FaExclamationCircle,
     FaHourglassHalf, FaBullhorn
 } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
 
 const Help = () => {
     const [activeIndex, setActiveIndex] = useState(null);
-    const { themes } = useTheme();
 
     const toggleFAQ = (index) => {
         setActiveIndex(activeIndex === index ? null : index);
@@ -18,15 +16,15 @@ const Help = () => {
     const faqs = [
         {
             question: "¿Cuáles son los tiempos de respuesta para las solicitudes?",
-            answer: "Acceso al Sistema:\n\n" +
+            answer: "Acceso al sistema:\n\n" +
                     "• Sistema disponible las 24 horas del día\n" +
                     "• Acceso ininterrumpido a consultas y solicitudes\n" +
                     "• Plataforma web siempre disponible\n\n" +
-                    "Tiempos de Procesamiento:\n\n" +
+                    "Tiempos de frocesamiento:\n\n" +
                     "• Ingreso de solicitud: Inmediato y automatizado\n" +
-                    "• Primera revisión: Siguiente día hábil\n" +
+                    "• Primera revisión: Día hábil\n" +
                     "• Tiempo de respuesta máximo: 48 horas hábiles\n\n" +
-                    "Horarios de Procesamiento:\n\n" +
+                    "Horarios de procesamiento:\n\n" +
                     "• Lunes a Viernes: 9:00 - 18:00 hrs\n" +
                     "• Solicitudes después de las 15:00: Siguiente día hábil\n" +
                     "• Fines de semana y festivos no son días hábiles\n\n" +
@@ -35,21 +33,21 @@ const Help = () => {
         },
         {
             question: "¿Cuáles son los requisitos para solicitar un certificado de residencia?",
-            answer: "Requisitos Fundamentales:\n\n" +
+            answer: "Requisitos fundamentales:\n\n" +
                     "• Ser mayor de 18 años\n" +
                     "• Residir en la comuna de la unidad vecinal\n" +
                     "• Estar registrado y validado en el sistema\n" +
                     "• Tener dirección verificada\n\n" +
-                    "Documentos Necesarios:\n\n" +
+                    "Documentos necesarios:\n\n" +
                     "• Cédula de identidad vigente\n\n" +
                     "Importante: La directiva verificará toda la información antes de aprobar la solicitud.\n\n",
             icon: <FaIdCard className="text-2xl text-blue-500" />
         },
         {
             question: "¿Qué documentos necesito para registrarme en el sistema?",
-            answer: "Documentos Obligatorios:\n\n" +
+            answer: "Documentos obligatorios:\n\n" +
                     "• Cédula de identidad vigente\n\n" +
-                    "Requisitos Adicionales:\n\n" +
+                    "Requisitos adicionales:\n\n" +
                     "• Ser familiar de un miembro registrado en el sistema\n" +
                     "• Ser residente de la comuna\n" +
                     "• Email válido\n" +
@@ -58,12 +56,12 @@ const Help = () => {
         },
         {
             question: "¿Cómo mantengo actualizada mi información personal?",
-            answer: "Pasos para Actualización:\n\n" +
+            answer: "Pasos para actualización:\n\n" +
                     "• Acceder a 'Mi Perfil'\n" +
                     "• Revisar información actual\n" +
                     "• Modificar datos necesarios\n" +
                     "• Guardar cambios\n\n" +
-                    "Datos Importantes a Mantener Actualizados:\n\n" +
+                    "Datos importantes a mantener actualizados:\n\n" +
                     "• Dirección actual\n" +
                     "• Teléfono de contacto\n" +
                     "• Correo electrónico\n" +
@@ -73,7 +71,7 @@ const Help = () => {
         },
         {
             question: "¿Cómo funciona el sistema de noticias y anuncios?",
-            answer: "Tipos de Publicaciones:\n\n" +
+            answer: "Tipos de publicaciones:\n\n" +
                     "• Noticias urgentes\n" +
                     "• Información general\n" +
                     "• Eventos comunitarios\n\n",
@@ -81,12 +79,12 @@ const Help = () => {
         },
         {
             question: "¿Qué hacer si mi solicitud es rechazada?",
-            answer: "Pasos a Seguir:\n\n" +
+            answer: "Pasos a seguir:\n\n" +
                     "• Revisar motivo del rechazo\n" +
                     "• Verificar requisitos\n" +
                     "• Corregir información\n" +
                     "• Realizar nueva solicitud\n\n" +
-                    "Causas Comunes de Rechazo:\n\n" +
+                    "Causas comunes de rechazo:\n\n" +
                     "• Documentación incompleta\n" +
                     "• Datos desactualizados\n" +
                     "• Dirección fuera del territorio\n\n" +
@@ -167,7 +165,7 @@ const Help = () => {
     ];
 
     return (
-        <div className="flex-1 p-6 overflow-y-auto h-screen w-full" style={{ backgroundColor: themes.background }}>
+        <div className="flex-1 p-6 overflow-y-auto h-screen w-full">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-8 text-white shadow-xl">
@@ -201,7 +199,7 @@ const Help = () => {
                         <div className="bg-green-800 px-6 py-3 rounded-lg shadow-md">
                             <div className="text-center">
                                 <span className="block font-bold text-lg">Procesamiento</span>
-                                <span className="block text-green-200">Días Hábiles</span>
+                                <span className="block text-green-200">Días hábiles</span>
                                 <span className="text-xl font-mono">9:00 - 18:00</span>
                             </div>
                         </div>

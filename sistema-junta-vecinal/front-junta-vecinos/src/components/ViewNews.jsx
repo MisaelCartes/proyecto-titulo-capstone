@@ -7,13 +7,17 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { useTheme } from '../context/ThemeContext';
 
-
 export const ViewNews = () => {
     const [articles, setArticles] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [userRole, setUserRole] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const articlesPerPage = 9;
     const navigate = useNavigate();
+    const { themes } = useTheme();
 
     const validateToken = () => {
         const token = localStorage.getItem('token');
@@ -52,29 +56,60 @@ export const ViewNews = () => {
         }
     }, [navigate]);
 
+    const loadMoreArticles = async () => {
+        if (loading || !hasMore) return;
+
+        try {
+            setLoading(true);
+            const response = await axios.get(`http://127.0.0.1:8000/noticias/?page=${page}&limit=${articlesPerPage}`);
+            
+            if (response.data.length === 0 || response.data.length < articlesPerPage) {
+                setHasMore(false);
+            }
+
+            setArticles(prevArticles => {
+                const newArticles = [...prevArticles, ...response.data];
+                return Array.from(new Set(newArticles.map(a => a.id)))
+                    .map(id => newArticles.find(a => a.id === id))
+                    .sort((a, b) => b.id - a.id);
+            });
+            
+            setPage(prev => prev + 1);
+        } catch (error) {
+            console.error('Error loading articles:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error cargando las publicaciones del blog.',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Carga inicial
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/noticias/');
-                setArticles(response.data);
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error cargando las publicaciones del blog.',
-                    
-                });
+        loadMoreArticles();
+    }, []);
+
+    // Detector de scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 500) {
+                if (!loading && hasMore) {
+                    loadMoreArticles();
+                }
             }
         };
 
-        fetchData();
-    }, []);
-
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loading, hasMore, page]);
 
     const handleDelete = async (id) => {
         if (!validateToken() || userRole !== "1") {
             Swal.fire('Error', 'No tienes permisos para realizar esta acción', 'error');
-            navigate('/');
+            navigate('/login');
             return;
         }
 
@@ -102,7 +137,7 @@ export const ViewNews = () => {
                 } catch (error) {
                     if (error.response?.status === 401 || error.response?.status === 403) {
                         Swal.fire('Error', 'No tienes permisos para realizar esta acción', 'error');
-                        navigate('/');
+                        navigate('/login');
                     } else {
                         Swal.fire('Error', 'No se pudo eliminar la noticia', 'error');
                     }
@@ -111,7 +146,6 @@ export const ViewNews = () => {
         });
     };
 
-    const { themes } = useTheme();
     const openModal = (article) => {
         setSelectedArticle(article);
         setModalIsOpen(true);
@@ -130,14 +164,16 @@ export const ViewNews = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6" style={{ backgroundColor: themes.background, color: themes.text }}>
-            <h2 className="text-3xl font-bold text-center mb-6" style={{ color: themes.text }}>Noticias de la Comunidad</h2>
+            <h2 className="text-3xl font-bold text-center mb-6" style={{ color: themes.text }}>
+                Noticias de la Comunidad
+            </h2>
             <p className="text-center mb-12" style={{ color: themes.text }}>
                 Mantente informado sobre los eventos, actividades y anuncios importantes de nuestro barrio.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.length > 0 ? (
                     articles.map((article, index) => (
-                        <div key={index} className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: themes.card, color: themes.text }}>
+                        <div key={article.id} className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: themes.card, color: themes.text }}>
                             <img
                                 src={`http://localhost:8000/${article.urlToImage}`}
                                 alt={article.title}
@@ -189,6 +225,18 @@ export const ViewNews = () => {
                     <p className="text-center" style={{ color: themes.secondary }}>No hay noticias disponibles.</p>
                 )}
             </div>
+
+            {loading && (
+                <div className="flex justify-center my-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+            )}
+
+            {!hasMore && articles.length > 0 && (
+                <p className="text-center mt-8" style={{ color: themes.secondary }}>
+                    No hay más noticias para cargar
+                </p>
+            )}
 
             <Modal
                 isOpen={modalIsOpen}

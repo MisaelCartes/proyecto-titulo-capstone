@@ -13,17 +13,17 @@ const TermsAndPrivacy = () => {
         {
             title: "Política de Privacidad",
             icon: <FaUserLock className="text-2xl text-blue-500" />,
-            content: "Protección de Datos Personales:\n\n" +
+            content: "Protección de datos personales:\n\n" +
                     "• Cumplimiento con la Ley 19.628 sobre Protección de Datos Personales\n" +
                     "• Tratamiento confidencial de información personal\n" +
                     "• Almacenamiento seguro de datos\n" +
                     "• No compartimos información con terceros\n\n" +
-                    "Datos que Recopilamos:\n\n" +
+                    "Datos que recopilamos:\n\n" +
                     "• Nombre completo y RUT\n" +
                     "• Dirección de residencia\n" +
                     "• Información de contacto\n" +
                     "• Composición familiar\n\n" +
-                    "Uso de la Información:\n\n" +
+                    "Uso de la información:\n\n" +
                     "• Verificación de identidad\n" +
                     "• Gestión de solicitudes\n" +
                     "• Comunicación oficial\n" +
@@ -33,8 +33,8 @@ const TermsAndPrivacy = () => {
         {
             title: "Términos de Uso",
             icon: <FaFileContract className="text-2xl text-blue-500" />,
-            content: "Condiciones Generales:\n\n" +
-                    "• Uso exclusivo para residentes de Pudahuel\n" +
+            content: "Condiciones generales:\n\n" +
+                    "• Uso exclusivo para residentes de la unidad vecinal\n" +
                     "• Acceso personal e intransferible\n" +
                     "• Responsabilidad del usuario sobre su cuenta\n" +
                     "• Uso apropiado del sistema\n\n" +
@@ -48,12 +48,13 @@ const TermsAndPrivacy = () => {
         {
             title: "Derechos del Usuario",
             icon: <FaHandshake className="text-2xl text-blue-500" />,
-            content: "Derechos Fundamentales:\n\n" +
+            content: "Derechos fundamentales:\n\n" +
                     "• Acceso a información personal\n" +
                     "• Rectificación de datos incorrectos\n" +
                     "• Cancelación de cuenta\n" +
-                    "• Oposición al tratamiento de datos\n\n" +
-                    "Solicitudes y Reclamos:\n\n" +
+                    "• Oposición al tratamiento de datos\n" +
+                    "• Baneo de cuenta\n\n" +
+                    "Solicitudes y reclamos:\n\n" +
                     "• Derecho a presentar reclamos\n" +
                     "• Respuesta en máximo 48 horas hábiles\n" +
                     "• Proceso de apelación disponible\n\n" +
@@ -62,25 +63,25 @@ const TermsAndPrivacy = () => {
         {
             title: "Uso de Cookies y Tecnologías",
             icon: <FaUsersCog className="text-2xl text-blue-500" />,
-            content: "Cookies Utilizadas:\n\n" +
+            content: "Cookies utilizadas:\n\n" +
                     "• Cookies esenciales de sesión\n" +
-                    "• Cookies de rendimiento\n" +
-                    "• Cookies de preferencias\n\n" +
+                    "• Cookies de rendimiento\n\n" +
+                    // "• Cookies de preferencias\n\n" +
                     "Finalidad:\n\n" +
                     "• Mantener la sesión activa\n" +
-                    "• Mejorar la experiencia de usuario\n" +
-                    "• Recordar preferencias\n\n" +
+                    "• Mejorar la experiencia de usuario\n\n" +
+                    // "• Recordar preferencias\n" +
                     "Importante: Puedes configurar tu navegador para gestionar las cookies."
         },
         {
             title: "Responsabilidades y Obligaciones",
             icon: <FaExclamationTriangle className="text-2xl text-blue-500" />,
-            content: "Responsabilidades del Usuario:\n\n" +
+            content: "Responsabilidades del usuario:\n\n" +
                     "• Mantener información actualizada\n" +
                     "• Uso responsable del sistema\n" +
                     "• Reportar irregularidades\n" +
                     "• Proteger credenciales de acceso\n\n" +
-                    "Obligaciones de la Junta:\n\n" +
+                    "Obligaciones de la junta:\n\n" +
                     "• Protección de datos personales\n" +
                     "• Mantener el sistema operativo\n" +
                     "• Brindar soporte técnico\n" +

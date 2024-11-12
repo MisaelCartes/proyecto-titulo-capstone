@@ -14,14 +14,14 @@ const PrivacyPolicy = () => {
         {
             title: "Recopilación de Datos Personales",
             icon: <FaUserLock className="text-2xl text-blue-500" />,
-            content: "Datos que Recopilamos:\n\n" +
+            content: "Datos que recopilamos:\n\n" +
                     "• Nombre completo y RUT\n" +
                     "• Dirección de residencia\n" +
                     "• Número telefónico\n" +
                     "• Correo electrónico\n" +
                     "• Composición familiar\n" +
                     "• Registro Social de Hogares\n\n" +
-                    "Propósito de la Recopilación:\n\n" +
+                    "Propósito de la recopilación:\n\n" +
                     "• Identificación de residentes\n" +
                     "• Emisión de certificados\n" +
                     "• Comunicaciones oficiales\n" +
@@ -31,12 +31,12 @@ const PrivacyPolicy = () => {
         {
             title: "Uso y Tratamiento de Datos",
             icon: <FaDatabase className="text-2xl text-blue-500" />,
-            content: "Usos Principales:\n\n" +
+            content: "Usos principales:\n\n" +
                     "• Validación de identidad\n" +
                     "• Gestión de certificados\n" +
                     "• Envío de notificaciones\n" +
                     "• Estadísticas internas\n\n" +
-                    "Procesamiento de Datos:\n\n" +
+                    "Procesamiento de datos:\n\n" +
                     "• Almacenamiento seguro\n" +
                     "• Acceso restringido\n" +
                     "• Encriptación de información\n" +
@@ -46,27 +46,27 @@ const PrivacyPolicy = () => {
         {
             title: "Protección de la Información",
             icon: <FaLock className="text-2xl text-blue-500" />,
-            content: "Medidas de Seguridad:\n\n" +
+            content: "Medidas de seguridad:\n\n" +
                     "• Encriptación de datos sensibles\n" +
                     "• Firewalls de seguridad\n" +
                     "• Monitoreo constante\n" +
                     "• Actualizaciones periódicas\n\n" +
-                    "Acceso a la Información:\n\n" +
+                    "Acceso a la información:\n\n" +
                     "• Solo personal autorizado\n" +
                     "• Registros de acceso\n" +
-                    "• Autenticación multifactor\n" +
+                    // "• Autenticación multifactor\n" +
                     "• Políticas de contraseñas seguras\n\n" +
                     "Importante: Implementamos las mejores prácticas de seguridad digital."
         },
         {
             title: "Derechos ARCO",
             icon: <FaUserShield className="text-2xl text-blue-500" />,
-            content: "Tus Derechos:\n\n" +
+            content: "Tus derechos:\n\n" +
                     "• Acceso a tus datos personales\n" +
                     "• Rectificación de información incorrecta\n" +
                     "• Cancelación de datos\n" +
                     "• Oposición al tratamiento\n\n" +
-                    "Cómo Ejercer tus Derechos:\n\n" +
+                    "Cómo ejercer tus derechos:\n\n" +
                     "• Solicitud por escrito\n" +
                     "• Identificación válida\n" +
                     "• Respuesta en 10 días hábiles\n" +
@@ -76,12 +76,12 @@ const PrivacyPolicy = () => {
         {
             title: "Almacenamiento de Datos",
             icon: <FaServer className="text-2xl text-blue-500" />,
-            content: "Período de Retención:\n\n" +
+            content: "Período de retención:\n\n" +
                     "• Datos activos: Durante membresía\n" +
                     "• Históricos: 5 años\n" +
                     "• Certificados: 2 años\n" +
                     "• Respaldos: 1 año\n\n" +
-                    "Ubicación de Datos:\n\n" +
+                    "Ubicación de datos:\n\n" +
                     "• Servidores en Chile\n" +
                     "• Copias de seguridad encriptadas\n" +
                     "• Centros de datos certificados\n\n" +
@@ -90,29 +90,26 @@ const PrivacyPolicy = () => {
         {
             title: "Cookies y Tecnologías",
             icon: <FaCookieBite className="text-2xl text-blue-500" />,
-            content: "Uso de Cookies:\n\n" +
+            content: "Uso de cookies:\n\n" +
                     "• Cookies esenciales\n" +
-                    "• Cookies de sesión\n" +
-                    "• Cookies de preferencias\n\n" +
+                    "• Cookies de sesión\n\n" +
+                    // "• Cookies de preferencias\n\n" +
                     "Propósito:\n\n" +
                     "• Mantener sesión activa\n" +
-                    "• Mejorar experiencia de usuario\n" +
-                    "• Recordar preferencias\n" +
-                    "• Análisis de uso\n\n" +
-                    "Control de Cookies:\n\n" +
-                    "• Configuración en navegador\n" +
-                    "• Opción de rechazar\n" +
-                    "• Gestión de preferencias\n\n" +
+                    "• Mejorar experiencia de usuario\n\n" +
+                    // "• Recordar preferencias\n\n" +
+                    // "• Análisis de uso\n\n" +
+                    
                     "Importante: Puedes controlar el uso de cookies desde tu navegador."
         },
         {
             title: "Compartir Información",
             icon: <FaHandshake className="text-2xl text-blue-500" />,
-            content: "Política de No Divulgación:\n\n" +
+            content: "Política de no divulgación:\n\n" +
                     "• No venta de datos\n" +
                     "• No compartir con terceros\n" +
                     "• Solo uso interno\n\n" +
-                    "Excepciones Legales:\n\n" +
+                    "Excepciones legales:\n\n" +
                     "• Orden judicial\n" +
                     "• Requerimiento legal\n" +
                     "• Protección de derechos\n\n" +
@@ -207,7 +204,7 @@ const PrivacyPolicy = () => {
                         <FaCheck />
                         <span>Última actualización: Noviembre 2024</span>
                     </div>
-                    <span className="text-gray-400 text-sm">Versión 2.0</span>
+                    <span className="text-gray-400 text-sm">Versión 1.0</span>
                 </div>
 
                 {/* Secciones */}

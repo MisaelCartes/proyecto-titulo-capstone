@@ -138,7 +138,7 @@ const SidebarPanel = () => {
         if (searchTerm.trim() === '') {
             Swal.fire({
                 icon: 'warning',
-                title: 'Campo vacío',
+                title: 'Buscador vacío',
                 text: 'Por favor ingrese un término de búsqueda',
                 timer: 1500,
                 showConfirmButton: false

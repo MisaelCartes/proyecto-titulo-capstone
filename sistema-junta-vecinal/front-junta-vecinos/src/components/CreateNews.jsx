@@ -257,7 +257,7 @@ export const CreateNews = () => {
                 id="title"
                 name="title"
                 type="text"
-                placeholder="Ingrese un titulo"
+                placeholder="Ingrese un titulo de al menos 10 caracteres"
                 value={formData.title}
                 onChange={handleChange}
                 required
@@ -273,7 +273,7 @@ export const CreateNews = () => {
               <textarea
                 id="description"
                 name="description"
-                placeholder="Ingrese una descripción"
+                placeholder="Ingrese una descripción de al menos 10 caracteres"
                 rows="4"
                 value={formData.description}
                 onChange={handleChange}

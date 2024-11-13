@@ -4,39 +4,53 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { useTheme } from '../context/ThemeContext';
-
-const userDemographics = [
-  { value: 150, label: 'Niños', color: '#38bdf8' },
-  { value: 300, label: 'Adultos', color: '#14b8a6' },
-  { value: 100, label: 'Mayores', color: '#c084fc' }
-];
-
-const userParticipation = [
-  { year: '2021', participated: 200, total: 300 },
-  { year: '2022', participated: 250, total: 350 },
-  { year: '2023', participated: 300, total: 400 }
-];
-
-const monthlyVisits = [
-  { month: 'Enero', visits: 300 },
-  { month: 'Febrero', visits: 250 },
-  { month: 'Marzo', visits: 400 },
-  { month: 'Abril', visits: 350 }
-];
-
-const userSatisfaction = [
-  { value: 50, label: 'Bajo', color: '#14b8a6' },
-  { value: 100, label: 'Moderado', color: '#38bdf8' },
-  { value: 250, label: 'Alto', color: '#c084fc' }
-];
+import axios from 'axios';
+import { FaUsers } from 'react-icons/fa';
 
 const Dashboard = () => {
   const { themes, theme } = useTheme();
   useValidateRoleAndAccessToken(["1"]); 
+  const [dashboardData, setDashboardData] = React.useState(null);
 
   const textColor = theme === 'light' ? '#1f2937' : '#ffffff';
   const cardBgColor = theme === 'light' ? '#ffffff' : 'rgb(55 65 81)';
   const containerBgColor = theme === 'light' ? '#f3f4f6' : 'rgb(31 41 55)';
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://127.0.0.1:8000/users/kpis/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const transformDemographicData = (data) => {
+    if (!data) return [];
+    return [
+      { value: data.menor, label: 'Niños', color: '#38bdf8' },
+      { value: data.adolescente, label: 'Adolescentes', color: '#14b8a6' },
+      { value: data.adulto, label: 'Adultos', color: '#c084fc' },
+      { value: data.tercera_edad, label: 'Tercera Edad', color: '#f472b6' }
+    ].filter(item => item.value > 0);
+  };
+
+  const transformMonthlyData = (data) => {
+    if (!data) return [];
+    return data.map(item => ({
+      month: new Date(item.month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+      visits: item.count
+    }));
+  };
 
   // Configuración común para los gráficos
   const chartSettings = {
@@ -78,6 +92,18 @@ const Dashboard = () => {
     }
   };
 
+  if (!dashboardData) {
+    return (
+      <div className="flex justify-center items-center h-screen" style={{ backgroundColor: themes.background }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  const getTooltipContent = (params) => {
+    return `${params.value} usuarios`;
+  };
+
   return (
     <Container sx={{ width: '95%', margin: '0 auto', paddingTop: 4, paddingBottom: 4 }} style={{ backgroundColor: themes.background }}>
       <div style={{ backgroundColor: containerBgColor }} className="rounded-lg p-8">
@@ -85,19 +111,39 @@ const Dashboard = () => {
           Dashboard de la Comunidad Vecinal
         </h2>
 
+        {/* Card para Total de Usuarios */}
+        <div className="mb-8">
+          <div style={{ backgroundColor: cardBgColor }} className="p-6 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: textColor }}>
+                  Total de Usuarios Registrados
+                </h3>
+                <p className="text-4xl font-bold" style={{ color: '#38bdf8' }}>
+                  {dashboardData.cantidad_usuarios_registrados}
+                </p>
+              </div>
+              <FaUsers size={48} className="text-blue-400" />
+            </div>
+          </div>
+        </div>
+
         <Grid container spacing={5}>
           <Grid item xs={12} md={6}>
             <div style={{ backgroundColor: cardBgColor }} className="p-4 rounded-lg">
               <h3 className="text-xl font-semibold mb-4" style={{ color: textColor }}>
-                Demografía de Usuarios
+                Demografía de Usuarios y Miembros
               </h3>
               <PieChart
-                colors={['#38bdf8', '#14b8a6', '#c084fc']}
+                colors={['#38bdf8', '#14b8a6', '#c084fc', '#f472b6']}
                 series={[{
-                  data: userDemographics,
+                  data: transformDemographicData(dashboardData.demografia_usuarios_y_miembros),
                   highlightScope: { faded: 'global', highlighted: 'item' },
-                  valueFormatter: (value) => `${value} usuarios`,
-                  arcLabel: null
+                  valueFormatter: (item) => `${item.value} usuarios`,
+                  arcLabel: null,
+                  tooltip: {
+                    formatter: (params) => `${params.name}: ${params.value} usuarios`
+                  }
                 }]}
                 {...pieChartSettings}
               />
@@ -107,32 +153,20 @@ const Dashboard = () => {
           <Grid item xs={12} md={6}>
             <div style={{ backgroundColor: cardBgColor }} className="p-4 rounded-lg">
               <h3 className="text-xl font-semibold mb-4" style={{ color: textColor }}>
-                Participación en Actividades por Año
+                Distribución de Solicitudes por Tipo de Persona
               </h3>
-              <BarChart
-                colors={['#38bdf8', '#14b8a6']}
-                dataset={userParticipation}
-                xAxis={[{
-                  scaleType: 'band',
-                  dataKey: 'year',
-                  tickLabelStyle: { fill: textColor }
-                }]}
-                series={[
-                  { 
-                    dataKey: 'participated',
-                    label: 'Participados',
-                    valueFormatter: (value) => `${value} usuarios`
-                  },
-                  { 
-                    dataKey: 'total',
-                    label: 'Total',
-                    valueFormatter: (value) => `${value} usuarios`
+              <PieChart
+                colors={['#38bdf8', '#14b8a6', '#c084fc', '#f472b6']}
+                series={[{
+                  data: transformDemographicData(dashboardData.cantidad_solicitudes_tipo_persona),
+                  highlightScope: { faded: 'global', highlighted: 'item' },
+                  valueFormatter: (item) => `${item.value} solicitudes`,
+                  arcLabel: null,
+                  tooltip: {
+                    formatter: (params) => `${params.name}: ${params.value} solicitudes`
                   }
-                ]}
-                yAxis={[{
-                  tickLabelStyle: { fill: textColor }
                 }]}
-                {...barChartSettings}
+                {...pieChartSettings}
               />
             </div>
           </Grid>
@@ -140,11 +174,11 @@ const Dashboard = () => {
           <Grid item xs={12} md={6}>
             <div style={{ backgroundColor: cardBgColor }} className="p-4 rounded-lg">
               <h3 className="text-xl font-semibold mb-4" style={{ color: textColor }}>
-                Visitas Mensuales
+                Solicitudes Mensuales
               </h3>
               <BarChart
                 colors={['#14b8a6']}
-                dataset={monthlyVisits}
+                dataset={transformMonthlyData(dashboardData.cantidad_solicitudes_mensuales)}
                 xAxis={[{
                   scaleType: 'band',
                   dataKey: 'month',
@@ -153,35 +187,15 @@ const Dashboard = () => {
                 series={[
                   { 
                     dataKey: 'visits',
-                    valueFormatter: (value) => `${value} visitas`,
-                    // Remover label
+                    valueFormatter: (value) => `${value} solicitudes`,
                   }
                 ]}
                 yAxis={[{
                   tickLabelStyle: { fill: textColor }
                 }]}
                 {...barChartSettings}
-                // Sobrescribir configuración de leyenda para este gráfico específico
-                legend={{ hidden: true }} // Ocultar la leyenda
-                margin={{ top: 20, bottom: 40, left: 40, right: 20 }} // Reducir margen derecho ya que no hay leyenda
-              />
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div style={{ backgroundColor: cardBgColor }} className="p-4 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4" style={{ color: textColor }}>
-                Satisfacción de Usuarios
-              </h3>
-              <PieChart
-                colors={['#14b8a6', '#38bdf8', '#c084fc']}
-                series={[{
-                  data: userSatisfaction,
-                  highlightScope: { faded: 'global', highlighted: 'item' },
-                  valueFormatter: (value) => `${value} usuarios`,
-                  arcLabel: null
-                }]}
-                {...pieChartSettings}
+                legend={{ hidden: true }}
+                margin={{ top: 20, bottom: 40, left: 40, right: 20 }}
               />
             </div>
           </Grid>

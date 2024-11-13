@@ -26,7 +26,6 @@ const SidebarPanel = () => {
     const [showReservas, setShowReservas] = useState(false);
     const [showUsuarios, setShowUsuarios] = useState(false);
     const [viewUser, setViewUser] = useState(false);
-    const [viewDashboard, setViewDashboard] = useState(true);
     const [viewNews, setViewNews] = useState(false);
     const [viewCreateNews, setViewCreateNews] = useState(false);
     const [viewCreateCertification, setViewCreateCertification] = useState(false);
@@ -35,7 +34,6 @@ const SidebarPanel = () => {
     const [viewMapa, setViewMapa] = useState(false);
     const [viewCertificadoMoveStatus, setViewCertificadoMoveStatus] = useState(false);
     const [viewFamilyMember, setviewFamilyMember] = useState(false);
-    const [activeSection, setActiveSection] = useState('dashboard');
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredItems, setFilteredItems] = useState([]);
@@ -43,6 +41,11 @@ const SidebarPanel = () => {
     const [rut, setRut] = useState(null);
     const [rol, setRole] = useState(null);
     const { themes } = useTheme();
+    // const [activeSection, setActiveSection] = useState('dashboard');
+    // const [viewDashboard, setViewDashboard] = useState(true);
+    const [activeSection, setActiveSection] = useState(localStorage.getItem('lastSection') || 'dashboard');
+    const [viewDashboard, setViewDashboard] = useState(localStorage.getItem('lastSection') === 'dashboard' || !localStorage.getItem('lastSection'));
+
 
     useEffect(() => {
         const accessToken = localStorage.getItem('token');
@@ -66,6 +69,46 @@ const SidebarPanel = () => {
         }
     }, [navigate]);
 
+    useEffect(() => {
+        // Recuperar la última sección al cargar
+        const lastSection = localStorage.getItem('lastSection');
+        if (lastSection) {
+            // Simular el clic en la última sección vista
+            switch(lastSection) {
+                case 'users':
+                    handleUserClick();
+                    break;
+                case 'news':
+                    handleNewsClick();
+                    break;
+                case 'createNews':
+                    handleCreateNewsClick();
+                    break;
+                case 'createCertification':
+                    handleCreateCertificationClick();
+                    break;
+                case 'certificadoStatus':
+                    handleCertificadoStatusClick();
+                    break;
+                case 'familyRegister':
+                    handleFamilyRegisterClick();
+                    break;
+                case 'mapa':
+                    handleMapaClick();
+                    break;
+                case 'certificadoMoveStatus':
+                    handleCertificadoMoveStatusClick();
+                    break;
+                case 'familyMember':
+                    handleViewFamiliyMemberClick();
+                    break;
+                default:
+                    setViewDashboard(true);
+            }
+            setActiveSection(lastSection);
+        }
+    }, []); // Solo se ejecuta al montar el componente
+
     const handleLogout = () => {
         Swal.fire({
             title: '¿Estás seguro?',
@@ -79,6 +122,8 @@ const SidebarPanel = () => {
         }).then((result) => {
             if (result.isConfirmed) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('lastSection'); 
+                
                 Swal.fire({
                     title: '¡Sesión cerrada!',
                     text: 'Has cerrado sesión exitosamente',
@@ -230,6 +275,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('users');
+        localStorage.setItem('lastSection', 'users');
     };
 
     const handleNewsClick = () => {
@@ -244,6 +290,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('news');
+        localStorage.setItem('lastSection', 'news');
     };
 
     const handleCreateNewsClick = () => {
@@ -258,6 +305,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('createNews');
+        localStorage.setItem('lastSection', 'createNews');
     };
 
     const handleCreateCertificationClick = () => {
@@ -272,6 +320,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('createCertification');
+        localStorage.setItem('lastSection', 'createCertification');
     };
 
     const handleCertificadoStatusClick = () => {
@@ -286,6 +335,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('certificadoStatus');
+        localStorage.setItem('lastSection', 'certificadoStatus');
     };
 
     const handleFamilyRegisterClick = () => {
@@ -300,6 +350,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('familyRegister');
+        localStorage.setItem('lastSection', 'familyRegister');
     };
 
     const handleBackClick = () => {
@@ -314,6 +365,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('dashboard');
+        localStorage.setItem('lastSection', 'dashboard');
     };
 
     const handleMapaClick = () => {
@@ -328,6 +380,7 @@ const SidebarPanel = () => {
         setViewCertificadoMoveStatus(false);
         setviewFamilyMember(false);
         setActiveSection('mapa');
+        localStorage.setItem('lastSection', 'mapa');
     };
 
     const handleCertificadoMoveStatusClick = () => {
@@ -342,6 +395,7 @@ const SidebarPanel = () => {
         setViewMapa(false);
         setviewFamilyMember(false);
         setActiveSection('certificadoMoveStatus');
+        localStorage.setItem('lastSection', 'certificadoMoveStatus');
     };
 
     const handleViewFamiliyMemberClick = () => {
@@ -356,6 +410,7 @@ const SidebarPanel = () => {
         setViewFamilyRegister(false);
         setViewMapa(false);
         setActiveSection('familyMember');
+        localStorage.setItem('lastSection', 'familyMember');
     };
 
     
@@ -387,7 +442,7 @@ const SidebarPanel = () => {
                     {isOpen && (
                         <div className="flex flex-col min-w-0">
                             <h2 className="text-sm font-bold text-white truncate">
-                                25° Junta de Vecinos
+                                25° Unidad Vecinal
                             </h2>
 
                             <div className="flex items-center">

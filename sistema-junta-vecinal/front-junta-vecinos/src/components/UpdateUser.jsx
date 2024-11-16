@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import validarRut from '../middlewares/validarRut';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import { FaArrowLeft, FaUser } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const UpdateUser = () => {
     const { themes } = useTheme();
@@ -38,7 +39,7 @@ const UpdateUser = () => {
             try {
                 const response = await axios({
                     method: 'get',
-                    url: 'http://127.0.0.1:8000/user/list/one/',
+                    url: `${BASE_URL}/user/list/one/`,
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
@@ -202,7 +203,7 @@ const UpdateUser = () => {
             // Para debugging
             console.log('Datos a enviar:', Object.fromEntries(formDataToSend));
 
-            const response = await axios.put('http://127.0.0.1:8000/user/edit/', formDataToSend, {
+            const response = await axios.put(`${BASE_URL}/user/edit/`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`

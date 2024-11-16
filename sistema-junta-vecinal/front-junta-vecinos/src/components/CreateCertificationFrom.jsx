@@ -6,6 +6,8 @@ import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAcc
 import { useTheme } from '../context/ThemeContext';
 import validarRut from '../middlewares/validarRut';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const CreateCertificationForm = () => {
     const [formData, setFormData] = useState({
         rutRequest: '',
@@ -53,7 +55,7 @@ const CreateCertificationForm = () => {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/create/solicitud/', {
+            await axios.post(`${BASE_URL}/create/solicitud/`, {
                 rutUser: rutUser,
                 rutRequest: formData.rutRequest,
             }, {

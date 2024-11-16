@@ -26,6 +26,8 @@ const center = {
 
 const libraries = ['places'];
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const MapaInteractive = () => {
   useValidateRoleAndAccessToken(['1'], '/login');
   const { themes } = useTheme();
@@ -41,7 +43,7 @@ const MapaInteractive = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://127.0.0.1:8000/users/list/map/', {
+        const response = await axios.get(`${BASE_URL}/users/list/map/`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -173,22 +175,6 @@ const MapaInteractive = () => {
             <p className="text-gray-800 text-lg"><strong className="text-gray-700 text-lg">Rut:</strong> {formatRut(selectedUser.rut)}</p>
             <p className="text-gray-800 text-lg"> <strong className="text-gray-700 text-lg">Teléfono:</strong> {selectedUser.phone}</p>
             <p className="text-gray-800 text-lg"><strong className="text-gray-700 text-lg">Correo:</strong> {selectedUser.email}</p>
-{/*             
-            {selectedUser.familyMembers && selectedUser.familyMembers.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-xl font-bold text-blue-700 mb-3">Miembros de la Familia:</h4>
-                <div className="grid gap-4">
-                  {selectedUser.familyMembers.map((member, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <p className="font-medium">{member.first_name} {member.last_name}</p>
-                      <p className="text-sm text-gray-600">RUT: {member.rut}</p>
-                      <p className="text-sm text-gray-600">Relación: {member.relationship}</p>
-                      <p className="text-sm text-gray-600">Teléfono: {member.phone_number}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )} */}
           </div>
         )}
       </Modal>

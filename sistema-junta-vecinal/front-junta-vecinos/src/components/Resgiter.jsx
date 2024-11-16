@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 // Validaciones
 const isValidCharacter = (value) => /^[A-Za-zÀ-ÿ\s]+$/.test(value);
 const isValidChileanPhoneNumber = (phone) => /^9\d{8}$/.test(phone);
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -173,7 +174,7 @@ const Register = () => {
         }
       });
 
-      const response = await axios.post('http://127.0.0.1:8000/register/', formDataToSend, {
+      const response = await axios.post(`${BASE_URL}/register/`, formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data', // Importante para archivos
         },

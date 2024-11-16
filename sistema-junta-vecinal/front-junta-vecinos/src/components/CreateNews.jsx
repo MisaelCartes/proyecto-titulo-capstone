@@ -6,6 +6,8 @@ import dayjs from 'dayjs';
 import { jwtDecode } from 'jwt-decode';
 import { useTheme } from '../context/ThemeContext';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 export const CreateNews = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -162,7 +164,7 @@ export const CreateNews = () => {
     if (id) {
       setIsEditing(true);
       axios
-        .get(`http://127.0.0.1:8000/obtener/noticia/`, {
+        .get(`${BASE_URL}/obtener/noticia/`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id }
         })
@@ -210,8 +212,8 @@ export const CreateNews = () => {
 
     try {
       const endpoint = isEditing
-        ? `http://127.0.0.1:8000/editar/noticia/`
-        : `http://127.0.0.1:8000/crear/noticias/`;
+        ? `${BASE_URL}/editar/noticia/`
+        : `${BASE_URL}/crear/noticias/`;
 
       await axios({
         method: isEditing ? 'PUT' : 'POST',

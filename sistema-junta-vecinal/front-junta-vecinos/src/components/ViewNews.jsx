@@ -7,6 +7,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { useTheme } from '../context/ThemeContext';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 export const ViewNews = () => {
     const [articles, setArticles] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -61,7 +63,7 @@ export const ViewNews = () => {
 
         try {
             setLoading(true);
-            const response = await axios.get(`http://127.0.0.1:8000/noticias/?page=${page}&limit=${articlesPerPage}`);
+            const response = await axios.get(`${BASE_URL}/noticias/?page=${page}&limit=${articlesPerPage}`);
 
             if (response.data.length === 0 || response.data.length < articlesPerPage) {
                 setHasMore(false);
@@ -124,7 +126,7 @@ export const ViewNews = () => {
                     const token = localStorage.getItem('token');
                     if (!token) throw new Error('No token available');
 
-                    await axios.delete('http://127.0.0.1:8000/eliminar/noticia/', {
+                    await axios.delete(`${BASE_URL}/eliminar/noticia/`, {
                         headers: { Authorization: `Bearer ${token}` },
                         data: { id }
                     });
@@ -184,7 +186,7 @@ export const ViewNews = () => {
                     {articles.map((article, index) => (
                         <div key={article.id} className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: themes.card, color: themes.text }}>
                             <img
-                                src={`http://localhost:8000/${article.urlToImage}`}
+                                src={`${BASE_URL}/${article.urlToImage}`}
                                 alt={article.title}
                                 className="w-full h-48 object-cover"
                             />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export default function Login() {
   const [rut, setRut] = useState('');
@@ -39,7 +40,7 @@ export default function Login() {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/login/', {
+        const response = await axios.post(`${BASE_URL}/login/`, {
           rut: rutFormated,
           password
         });

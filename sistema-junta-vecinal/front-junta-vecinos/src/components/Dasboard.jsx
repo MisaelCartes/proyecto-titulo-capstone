@@ -7,6 +7,8 @@ import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { FaUsers } from 'react-icons/fa';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const Dashboard = () => {
   const { themes, theme } = useTheme();
   useValidateRoleAndAccessToken(["1"]); 
@@ -20,7 +22,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://127.0.0.1:8000/users/kpis/', {
+        const response = await axios.get(`${BASE_URL}/users/kpis/`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

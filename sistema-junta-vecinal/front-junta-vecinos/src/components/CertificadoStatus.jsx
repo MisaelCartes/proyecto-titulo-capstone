@@ -11,6 +11,7 @@ import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const CertificadoStatus = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -96,7 +97,7 @@ const CertificadoStatus = () => {
             setCurrentCertificateId(certificateId);
             
             const response = await axios({
-                url: `http://127.0.0.1:8000/get/certificate/?id=${certificateId}`,
+                url: `${BASE_URL}/get/certificate/?id=${certificateId}`,
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -129,7 +130,7 @@ const CertificadoStatus = () => {
     const handleDownload = async (certificateId) => {
         try {
             const response = await axios({
-                url: `http://127.0.0.1:8000/get/certificate/?id=${certificateId}`,
+                url: `${BASE_URL}/get/certificate/?id=${certificateId}`,
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -207,7 +208,7 @@ const CertificadoStatus = () => {
                 const decodedToken = jwtDecode(token);
                 const rut = decodedToken.rut;
     
-                const response = await axios.get(`http://127.0.0.1:8000/certificados/list/user/?rut=${rut}`, {
+                const response = await axios.get(`${BASE_URL}/certificados/list/user/?rut=${rut}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
     

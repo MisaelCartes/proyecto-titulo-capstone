@@ -6,8 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import {formatRut} from '../middlewares/formatRut'
 
 
-
-const BASE_URL = 'http://127.0.0.1:8000'; // URL base de la API
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export const UserDetails = () => {
     const { rut } = useParams();

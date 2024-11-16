@@ -7,6 +7,8 @@ import dayjs from 'dayjs';
 import { FaClock, FaCheckCircle, FaTimesCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const CertificadoMoveStatus = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ const CertificadoMoveStatus = () => {
 
     const fetchRequests = useCallback(async () => {
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/certificados/list/admin/`, {
+            const response = await axios.get(`${BASE_URL}/certificados/list/admin/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -97,7 +99,7 @@ const CertificadoMoveStatus = () => {
             };
 
             const response = await axios.post(
-                'http://127.0.0.1:8000/certificados/change/status/',
+                `${BASE_URL}/certificados/change/status/`,
                 {
                     id: requestId,
                     rut: rut,
@@ -161,7 +163,7 @@ const CertificadoMoveStatus = () => {
 
         try {
             const response = await axios.post(
-                'http://127.0.0.1:8000/certificados/change/status/',
+                `${BASE_URL}/certificados/change/status/`,
                 {
                     id: requestId,
                     rut: rut,
@@ -192,13 +194,7 @@ const CertificadoMoveStatus = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            // await Swal.fire({
-            //     icon: 'error',
-            //     title: 'Error',
-            //     text: 'No se pudo actualizar el estado de la solicitud.',
-            //     timer: 2000,
-            //     timerProgressBar: true
-            // });
+            
         }
     };
 

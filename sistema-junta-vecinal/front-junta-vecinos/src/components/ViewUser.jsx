@@ -194,7 +194,7 @@ const ViewUser = () => {
                     <tbody className="divide-y divide-gray-600">
                         {getCurrentPageData().map((user, index) => (
                             <tr key={index} className="hover:bg-gray-700 transition-colors">
-                                <td className="py-3 px-4 text-gray-300">{`${user.firstName} ${user.lastName} ${user.motherLastName}`}</td>
+                                <td className="py-3 px-4 text-gray-300">{`${user.firstName} ${user.lastName}`} </td>
                                 <td className="py-3 px-4 text-gray-300">{formatRut(user.rut)}</td>
                                 <td className="py-3 px-4 text-gray-300">{user.email}</td>
                                 <td className="py-3 px-4 text-gray-300">{user.role === 1 ? 'Admin' : 'Miembro'}</td>

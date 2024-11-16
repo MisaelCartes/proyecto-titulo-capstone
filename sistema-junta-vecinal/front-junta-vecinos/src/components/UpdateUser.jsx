@@ -20,7 +20,7 @@ const UpdateUser = () => {
         password: "",
         housingType: "",
         photo: null,
-        photoUrl: "", // Para mostrar la foto actual
+        photoUrl: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -50,7 +50,7 @@ const UpdateUser = () => {
                 setFormData({
                     ...user,
                     password: "",
-                    photoUrl: user.photo || "" // Guardar la URL de la foto actual
+                    photoUrl: user.photo || ""
                 });
             } catch (error) {
                 console.error("Error al cargar los datos del usuario:", error);
@@ -70,24 +70,19 @@ const UpdateUser = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // Limpiar error cuando el usuario empieza a escribir
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
 
-        // Manejo especial para RUT
-        if (name === 'rut') {
-            const rutClean = value.replace(/[^0-9kK\.-]/g, '');
-            setFormData(prev => ({ ...prev, [name]: rutClean }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validar tipo de archivo
             const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!validTypes.includes(file.type)) {
                 setErrors(prev => ({
@@ -97,7 +92,6 @@ const UpdateUser = () => {
                 return;
             }
 
-            // Validar tamaño (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 setErrors(prev => ({
                     ...prev,
@@ -109,7 +103,7 @@ const UpdateUser = () => {
             setFormData(prev => ({
                 ...prev,
                 photo: file,
-                photoUrl: URL.createObjectURL(file) // Crear URL temporal para preview
+                photoUrl: URL.createObjectURL(file)
             }));
         }
     };
@@ -117,7 +111,6 @@ const UpdateUser = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validación nombre
         if (!formData.firstName) {
             newErrors.firstName = "El nombre es obligatorio";
         } else if (!isValidCharacter(formData.firstName)) {
@@ -128,7 +121,6 @@ const UpdateUser = () => {
             newErrors.firstName = "El nombre no puede tener más de 30 caracteres";
         }
 
-        // Validación apellido paterno
         if (!formData.lastName) {
             newErrors.lastName = "El apellido paterno es obligatorio";
         } else if (!isValidCharacter(formData.lastName)) {
@@ -139,18 +131,18 @@ const UpdateUser = () => {
             newErrors.lastName = "El apellido no puede tener más de 30 caracteres";
         }
 
-        // Validación apellido materno (opcional)
-        if (formData.motherLastName) {
-            if (!isValidCharacter(formData.motherLastName)) {
-                newErrors.motherLastName = "El apellido materno solo puede contener letras";
-            } else if (formData.motherLastName.length < 3) {
-                newErrors.motherLastName = "El apellido materno debe tener al menos 3 caracteres";
-            } else if (formData.motherLastName.length > 30) {
-                newErrors.motherLastName = "El apellido materno no puede tener más de 30 caracteres";
+        if (formData.motherLastName !== undefined && formData.motherLastName !== null) {
+            if (formData.motherLastName.trim().length > 0) {
+                if (!isValidCharacter(formData.motherLastName)) {
+                    newErrors.motherLastName = "El apellido materno solo puede contener letras";
+                } else if (formData.motherLastName.length < 3) {
+                    newErrors.motherLastName = "El apellido materno debe tener al menos 3 caracteres";
+                } else if (formData.motherLastName.length > 30) {
+                    newErrors.motherLastName = "El apellido materno no puede tener más de 30 caracteres";
+                }
             }
         }
 
-        // Validación dirección
         if (!formData.address) {
             newErrors.address = "La dirección es obligatoria";
         } else if (formData.address.length < 3) {
@@ -159,21 +151,18 @@ const UpdateUser = () => {
             newErrors.address = "La dirección no puede tener más de 100 caracteres";
         }
 
-        // Validación teléfono
         if (!formData.phoneNumber) {
             newErrors.phoneNumber = "El número de teléfono es obligatorio";
         } else if (!isValidChileanPhoneNumber(formData.phoneNumber)) {
             newErrors.phoneNumber = "Debe ser un número chileno válido (9 dígitos comenzando con 9)";
         }
 
-        // Validación email
         if (!formData.email) {
             newErrors.email = "El correo electrónico es obligatorio";
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "El correo electrónico no es válido";
         }
 
-        // Validación contraseña (opcional en actualización)
         if (formData.password) {
             if (formData.password.length < 6) {
                 newErrors.password = "La contraseña debe tener al menos 6 caracteres";
@@ -184,6 +173,7 @@ const UpdateUser = () => {
 
         return newErrors;
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const validationErrors = validateForm();
@@ -191,39 +181,37 @@ const UpdateUser = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             const firstError = Object.values(validationErrors)[0];
-            // Swal.fire({
-            //     icon: 'error',
-            //     title: 'Error de validación',
-            //     text: firstError,
-            //     timer: 3000,
-            //     timerProgressBar: true
-            // });
-            console.log(firstError)
+            console.log(firstError);
             return;
         }
 
         setLoading(true);
         try {
-            // Crear FormData para manejar la imagen
             const formDataToSend = new FormData();
+
             Object.keys(formData).forEach(key => {
-                if (key === 'photo') {
-                    if (formData.photo instanceof File) {
-                        formDataToSend.append('photo', formData.photo);
-                    }
-                } else if (key !== 'photoUrl') {  // No enviar la URL de la foto
-                    formDataToSend.append(key, formData[key]);
+              if (key === 'photo') {
+                if (formData.photo instanceof File) {
+                  formDataToSend.append('photo', formData.photo);
                 }
+              } else if (key !== 'photoUrl') {
+                formDataToSend.append(key, formData[key]);
+              }
             });
 
-            await axios.put(`http://127.0.0.1:8000/user/edit/`, formDataToSend, {
+            // Para debugging
+            console.log('Datos a enviar:', Object.fromEntries(formDataToSend));
+
+            const response = await axios.put('http://127.0.0.1:8000/user/edit/', formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`
                 }
             });
 
-            Swal.fire({
+            console.log('Respuesta:', response.data);
+
+            await Swal.fire({
                 title: "¡Actualización exitosa!",
                 text: "Los datos se han actualizado correctamente",
                 icon: "success",
@@ -233,7 +221,7 @@ const UpdateUser = () => {
 
             navigate('/panel');
         } catch (error) {
-            console.error("Error al actualizar:", error);
+            console.error("Error al actualizar:", error.response || error);
             Swal.fire({
                 title: "Error",
                 text: error.response?.data?.message || "Error al actualizar los datos",
@@ -259,7 +247,6 @@ const UpdateUser = () => {
                             Volver
                         </NavLink>
 
-                        {/* Avatar/Foto del usuario */}
                         <div className="flex flex-col items-center">
                             <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-500 mb-2">
                                 {formData.photoUrl ? (
@@ -385,8 +372,8 @@ const UpdateUser = () => {
                                     onChange={handleChange}
                                     required
                                     className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
-                                        focus:ring-2 focus:ring-inset ${errors.address ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
-                                        sm:text-sm sm:leading-6`}
+                focus:ring-2 focus:ring-inset ${errors.address ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'}
+                sm:text-sm sm:leading-6`}
                                 />
                                 {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                             </div>

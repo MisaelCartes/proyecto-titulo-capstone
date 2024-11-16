@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import {formatRut} from '../middlewares/formatRut'
+import { formatRut } from '../middlewares/formatRut'
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import dayjs from 'dayjs';
 import { FaClock, FaCheckCircle, FaTimesCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -12,9 +12,21 @@ const CertificadoMoveStatus = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [selectedStatus, setSelectedStatus] = useState({});
+    const [rejectionReasons, setRejectionReasons] = useState({});
+    const [showRejectionReason, setShowRejectionReason] = useState({});
     const itemsPerPage = 10;
     const token = localStorage.getItem('token');
     const { themes } = useTheme();
+
+    // Lista de motivos de rechazo
+    const reasonOptions = [
+        "No cumple con los requisitos mínimos",
+        "Documentación incompleta",
+        "Información incorrecta",
+        "Fuera del plazo establecido",
+        "Otros motivos"
+    ];
 
     const statusConfig = {
         SOLICITADO: {
@@ -50,20 +62,145 @@ const CertificadoMoveStatus = () => {
             const response = await axios.get(`http://127.0.0.1:8000/certificados/list/admin/`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            
-            // Ordenar las solicitudes por ID de mayor a menor
+
             const sortedRequests = response.data.sort((a, b) => b.id - a.id);
             return sortedRequests;
         } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudo cargar la lista de solicitudes.',
-                confirmButtonColor: '#3085d6'
-            });
+            // Swal.fire({
+            //     icon: 'error',
+            //     title: 'Error',
+            //     text: 'No se pudo cargar la lista de solicitudes.',
+            //     confirmButtonColor: '#3085d6'
+            // });
             throw error;
         }
     }, [token]);
+
+    const handleStatusChange = async (requestId, rut, newStatus, currentStatus) => {
+        if (!newStatus) return;
+
+        // Actualizar el estado seleccionado
+        setSelectedStatus(prev => ({
+            ...prev,
+            [requestId]: newStatus
+        }));
+
+        if (newStatus === 'RECHAZADO') {
+            setShowRejectionReason(prev => ({ ...prev, [requestId]: true }));
+            return;
+        }
+
+        try {
+            const backendStatusMapping = {
+                'APROBADO': 'APPROVED',
+                'RECHAZADO': 'REJECTED'
+            };
+
+            const response = await axios.post(
+                'http://127.0.0.1:8000/certificados/change/status/',
+                {
+                    id: requestId,
+                    rut: rut,
+                    status: backendStatusMapping[newStatus]
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                setRequests(prev => prev.map(request =>
+                    request.id === requestId ? { ...request, status: newStatus } : request
+                ));
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Estado actualizado!',
+                    text: 'El estado de la solicitud se ha actualizado correctamente.',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setSelectedStatus(prev => ({
+                ...prev,
+                [requestId]: currentStatus // Revertir al estado anterior en caso de error
+            }));
+
+            let errorMessage = 'No se pudo actualizar el estado de la solicitud.';
+            if (error.response?.data?.error === 'Invalid status') {
+                errorMessage = 'Estado inválido. Por favor, seleccione un estado válido.';
+            } else if (error.response?.status === 404) {
+                errorMessage = 'La solicitud no fue encontrada o no puede ser actualizada.';
+            }
+
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+    };
+
+    const handleRejectionReasonSubmit = async (requestId, rut) => {
+        if (!rejectionReasons[requestId]) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Por favor, seleccione un motivo de rechazo.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                'http://127.0.0.1:8000/certificados/change/status/',
+                {
+                    id: requestId,
+                    rut: rut,
+                    status: 'REJECTED',
+                    rejection_reason: rejectionReasons[requestId]
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                setRequests(prev => prev.map(request =>
+                    request.id === requestId ? { ...request, status: 'RECHAZADO' } : request
+                ));
+                setShowRejectionReason(prev => ({ ...prev, [requestId]: false }));
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Estado actualizado!',
+                    text: 'El estado de la solicitud se ha actualizado correctamente.',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // await Swal.fire({
+            //     icon: 'error',
+            //     title: 'Error',
+            //     text: 'No se pudo actualizar el estado de la solicitud.',
+            //     timer: 2000,
+            //     timerProgressBar: true
+            // });
+        }
+    };
 
     const getCurrentPageData = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -105,86 +242,6 @@ const CertificadoMoveStatus = () => {
         return pages;
     };
 
-    const handleStatusChange = async (requestId, rut, newStatus) => {
-        try {
-            if (!newStatus) return;
-
-            // Mapeo de estados para el backend
-            const backendStatusMapping = {
-                'APROBADO': 'APPROVED',
-                'RECHAZADO': 'REJECTED'
-            };
-
-            Swal.fire({
-                title: 'Actualizando estado...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const response = await axios.post(
-                'http://127.0.0.1:8000/certificados/change/status/',
-                {
-                    id: requestId,
-                    rut: rut,
-                    status: backendStatusMapping[newStatus]
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (response.data.success) {
-                setRequests(requests.map(request =>
-                    request.id === requestId
-                        ? { ...request, status: newStatus }
-                        : request
-                ));
-
-                await Swal.fire({
-                    icon: 'success',
-                    title: '¡Estado actualizado!',
-                    text: 'El estado de la solicitud se ha actualizado correctamente.',
-                    confirmButtonColor: '#3085d6',
-                    timer: 2000,
-                    timerProgressBar: true
-                });
-            }
-        } catch (error) {
-            console.error('Error completo:', error.response?.data);
-            let errorMessage = 'No se pudo actualizar el estado de la solicitud.';
-            
-            if (error.response?.data?.error === 'Invalid status') {
-                errorMessage = 'Estado inválido. Por favor, seleccione un estado válido.';
-            } else if (error.response?.status === 404) {
-                errorMessage = 'La solicitud no fue encontrada o no puede ser actualizada.';
-            }
-
-            await Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMessage,
-                confirmButtonColor: '#3085d6',
-                timer: 2000,
-                timerProgressBar: true
-            });
-
-            fetchRequests()
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        setRequests(data);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al recargar solicitudes:', error);
-                });
-        }
-    };
-
     useEffect(() => {
         fetchRequests()
             .then(data => {
@@ -199,7 +256,7 @@ const CertificadoMoveStatus = () => {
             .catch(() => {
                 setLoading(false);
             });
-    }, [fetchRequests]);
+    }, [fetchRequests, itemsPerPage]); // Agregado itemsPerPage al dependency array
 
     if (loading) {
         return (
@@ -260,15 +317,45 @@ const CertificadoMoveStatus = () => {
                                                 </div>
                                             </td>
                                             <td className="py-3 px-4">
-                                                <select
-                                                    className="w-full px-3 py-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    value={request.status}
-                                                    onChange={(e) => handleStatusChange(request.id, request.rut, e.target.value)}
-                                                >
-                                                    <option value="">Cambiar Estado</option>
-                                                    <option value="APROBADO">Aprobado</option>
-                                                    <option value="RECHAZADO">Rechazado</option>
-                                                </select>
+                                                <div className="space-y-2">
+                                                    <select
+                                                        className="w-full px-3 py-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        value={selectedStatus[request.id] || ''}
+                                                        onChange={(e) => handleStatusChange(request.id, request.rut, e.target.value, request.status)}
+                                                    >
+                                                        <option value="">Cambiar Estado</option>
+                                                        <option value="APROBADO">Aprobado</option>
+                                                        <option value="RECHAZADO">Rechazado</option>
+                                                    </select>
+
+                                                    {showRejectionReason[request.id] && (
+                                                        <div className="space-y-2">
+                                                            <select
+                                                                className="w-full px-3 py-2 border rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                                value={rejectionReasons[request.id] || ''}
+                                                                onChange={(e) => {
+                                                                    setRejectionReasons(prev => ({
+                                                                        ...prev,
+                                                                        [request.id]: e.target.value
+                                                                    }));
+                                                                }}
+                                                            >
+                                                                <option value="">Seleccione motivo de rechazo</option>
+                                                                {reasonOptions.map((reason, index) => (
+                                                                    <option key={index} value={reason}>
+                                                                        {reason}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <button
+                                                                onClick={() => handleRejectionReasonSubmit(request.id, request.rut)}
+                                                                className="w-full px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                            >
+                                                                Confirmar Rechazo
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -280,11 +367,10 @@ const CertificadoMoveStatus = () => {
                             <button
                                 onClick={handlePrevPage}
                                 disabled={currentPage === 1}
-                                className={`px-3 py-2 rounded-md ${
-                                    currentPage === 1
+                                className={`px-3 py-2 rounded-md ${currentPage === 1
                                         ? 'bg-gray-600 cursor-not-allowed'
                                         : 'bg-blue-600 hover:bg-blue-700'
-                                } text-white flex items-center`}
+                                    } text-white flex items-center`}
                             >
                                 <FaChevronLeft className="mr-1" />
                                 Anterior
@@ -295,11 +381,10 @@ const CertificadoMoveStatus = () => {
                                     <button
                                         key={page}
                                         onClick={() => handlePageChange(page)}
-                                        className={`px-4 py-2 rounded-md ${
-                                            currentPage === page
+                                        className={`px-4 py-2 rounded-md ${currentPage === page
                                                 ? 'bg-blue-600 text-white'
                                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                        }`}
+                                            }`}
                                     >
                                         {page}
                                     </button>
@@ -309,11 +394,10 @@ const CertificadoMoveStatus = () => {
                             <button
                                 onClick={handleNextPage}
                                 disabled={currentPage === totalPages}
-                                className={`px-3 py-2 rounded-md ${
-                                    currentPage === totalPages
+                                className={`px-3 py-2 rounded-md ${currentPage === totalPages
                                         ? 'bg-gray-600 cursor-not-allowed'
                                         : 'bg-blue-600 hover:bg-blue-700'
-                                } text-white flex items-center`}
+                                    } text-white flex items-center`}
                             >
                                 Siguiente
                                 <FaChevronRight className="ml-1" />

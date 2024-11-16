@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import Swal from 'sweetalert2';
-import { FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaTrash, FaClock } from 'react-icons/fa';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { useTheme } from '../context/ThemeContext';
@@ -62,7 +62,7 @@ export const ViewNews = () => {
         try {
             setLoading(true);
             const response = await axios.get(`http://127.0.0.1:8000/noticias/?page=${page}&limit=${articlesPerPage}`);
-            
+
             if (response.data.length === 0 || response.data.length < articlesPerPage) {
                 setHasMore(false);
             }
@@ -73,15 +73,11 @@ export const ViewNews = () => {
                     .map(id => newArticles.find(a => a.id === id))
                     .sort((a, b) => b.id - a.id);
             });
-            
+
             setPage(prev => prev + 1);
         } catch (error) {
             console.error('Error loading articles:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error cargando las publicaciones del blog.',
-            });
+
         } finally {
             setLoading(false);
         }
@@ -170,9 +166,22 @@ export const ViewNews = () => {
             <p className="text-center mb-12" style={{ color: themes.text }}>
                 Mantente informado sobre los eventos, actividades y anuncios importantes de nuestro barrio.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {articles.length > 0 ? (
-                    articles.map((article, index) => (
+
+            {articles.length === 0 ? (
+                <div className="max-w-2xl mx-auto">
+                    <div className="flex flex-col items-center justify-center p-8 bg-gray-700 rounded-lg border-2 border-gray-600">
+                        <FaClock size={50} className="text-gray-400 mb-4" />
+                        <p className="text-xl text-gray-300 text-center font-medium">
+                            No hay noticias para mostrar en este momento.
+                        </p>
+                        <p className="text-gray-400 text-center mt-2">
+                            Las noticias publicadas aparecerán aquí
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {articles.map((article, index) => (
                         <div key={article.id} className="rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: themes.card, color: themes.text }}>
                             <img
                                 src={`http://localhost:8000/${article.urlToImage}`}
@@ -220,11 +229,9 @@ export const ViewNews = () => {
                                 </div>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    <p className="text-center" style={{ color: themes.secondary }}>No hay noticias disponibles.</p>
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {loading && (
                 <div className="flex justify-center my-8">
@@ -232,12 +239,20 @@ export const ViewNews = () => {
                 </div>
             )}
 
+            {/* Modificado el mensaje de "no hay más noticias" */}
             {!hasMore && articles.length > 0 && (
-                <p className="text-center mt-8" style={{ color: themes.secondary }}>
-                    No hay más noticias para cargar
-                </p>
+                <div className="max-w-2xl mx-auto mt-8">
+                    <div className="flex flex-col items-center justify-center p-8 bg-gray-700 rounded-lg border-2 border-gray-600">
+                        <FaClock size={50} className="text-gray-400 mb-4" />
+                        <p className="text-xl text-gray-300 text-center font-medium">
+                            No hay más noticias para mostrar.
+                        </p>
+                        <p className="text-gray-400 text-center mt-2">
+                            Las nuevas noticias aparecerán aquí
+                        </p>
+                    </div>
+                </div>
             )}
-
             <Modal
                 isOpen={modalIsOpen}
                 onRequestClose={closeModal}

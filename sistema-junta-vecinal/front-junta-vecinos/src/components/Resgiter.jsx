@@ -22,6 +22,7 @@ const Register = () => {
     role: 'MEMBER',
     photo: null,
     housingType: '',
+    dateOfBirth: '', // Nuevo campo añadido
   });
 
   const { themes } = useTheme();
@@ -82,6 +83,21 @@ const Register = () => {
         newErrors.motherLastName = "El apellido materno debe tener al menos 3 caracteres";
       } else if (formData.motherLastName.length > 30) {
         newErrors.motherLastName = "El apellido materno no puede tener más de 30 caracteres";
+      }
+    }
+
+    // Validación fecha de nacimiento
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = "La fecha de nacimiento es obligatoria";
+    } else {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      if (age < 18) {
+        newErrors.dateOfBirth = "Debes ser mayor de 18 años";
+      } else if (age > 120) {
+        newErrors.dateOfBirth = "La fecha de nacimiento no es válida";
       }
     }
 
@@ -198,6 +214,7 @@ const Register = () => {
       });
     }
   };
+
   return (
     <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: themes.background }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -275,6 +292,27 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Fecha de Nacimiento */}
+            <div>
+              <label htmlFor="dateOfBirth" className="block text-sm font-medium leading-6 text-white">
+                Fecha de Nacimiento
+              </label>
+              <div className="mt-2">
+                <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  required
+                  className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white placeholder:text-gray-400 border-0 
+                    focus:ring-2 focus:ring-inset ${errors.dateOfBirth ? 'ring-2 ring-red-500 focus:ring-red-500' : 'focus:ring-blue-600'}
+                    sm:text-sm sm:leading-6`}
+                />
+                {errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
+              </div>
+            </div>
+
             {/* RUT */}
             <div>
               <label htmlFor="rut" className="block text-sm font-medium leading-6 text-white">
@@ -297,7 +335,7 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Dirección */}
+            {/*{/* Dirección */}
             <div>
               <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
                 Dirección
@@ -395,11 +433,11 @@ const Register = () => {
                   id="photo"
                   name="photo"
                   type="file"
-                  accept="image/*"  // Solo permitir imágenes
+                  accept="image/*"
                   onChange={handleFileChange}
                   className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white file:mr-4 file:py-2 
-               file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
-               file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                    file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold 
+                    file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                 />
               </div>
             </div>

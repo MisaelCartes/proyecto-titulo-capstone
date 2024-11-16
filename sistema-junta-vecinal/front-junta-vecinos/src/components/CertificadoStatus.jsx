@@ -4,15 +4,43 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useValidateRoleAndAccessToken } from '../middlewares/validateRoleAndAccessToken';
 import dayjs from 'dayjs';
-import { FaClock, FaCheckCircle, FaTimesCircle, FaDownload } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaTimesCircle, FaDownload, FaExclamationCircle, FaEye } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
-import {formatRut} from '../middlewares/formatRut'
+import {formatRut} from '../middlewares/formatRut';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 
 const CertificadoStatus = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [loadingPdf, setLoadingPdf] = useState(false);
+    const [currentCertificateId, setCurrentCertificateId] = useState(null);
     const token = localStorage.getItem('token');
     const { themes } = useTheme();
+
+    const modalStyles = {
+        content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            transform: 'translate(-50%, -50%)',
+            width: '60%',
+            height: '80%',
+            padding: '20px',
+            backgroundColor: '#1F2937',
+            border: '2px solid #4B5563',
+            borderRadius: '0.5rem',
+        },
+        overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            zIndex: 1000,
+        }
+    };
 
     useValidateRoleAndAccessToken(["1", "2"], '/login');
 
@@ -39,9 +67,18 @@ const CertificadoStatus = () => {
             icon: <FaDownload size={20} className="text-green-500" />,
             label: 'Descargar',
             textColor: 'text-green-500'
+        },
+        preview: {
+            icon: <FaEye size={20} className="text-blue-500" />,
+            label: 'Visualizar',
+            textColor: 'text-blue-500'
+        },
+        rejection: {
+            icon: <FaExclamationCircle size={20} className="text-red-500" />,
+            label: 'Ver Motivo',
+            textColor: 'text-red-500'
         }
     };
-
 
     const getStatusConfig = (status) => {
         const normalizedStatus = status?.toUpperCase();
@@ -52,30 +89,61 @@ const CertificadoStatus = () => {
         };
     };
 
-
-    const handleDownload = async (certificateId, rut) => {
+    const handlePreview = async (certificateId) => {
         try {
-            const response = await axios.get(
-                `http://127.0.0.1:8000/certificados/download/${certificateId}/${rut}/`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    responseType: 'blob' // Importante para recibir el archivo
-                }
-            );
+            setLoadingPdf(true);
+            setIsModalOpen(true);
+            setCurrentCertificateId(certificateId);
+            
+            const response = await axios({
+                url: `http://127.0.0.1:8000/get/certificate/?id=${certificateId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                responseType: 'arraybuffer'
+            });
 
-            // Crear URL temporal para el archivo
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const blob = new Blob([response.data], { 
+                type: 'application/pdf'
+            });
+            
+            const blobUrl = window.URL.createObjectURL(blob);
+            setPreviewUrl(blobUrl);
+            
+        } catch (error) {
+            console.error('Error al cargar el preview:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo cargar la vista previa del certificado.',
+                timer: 2000,
+                timerProgressBar: true
+            });
+            setIsModalOpen(false);
+        } finally {
+            setLoadingPdf(false);
+        }
+    };
 
-            // Crear enlace temporal y simular clic
+    const handleDownload = async (certificateId) => {
+        try {
+            const response = await axios({
+                url: `http://127.0.0.1:8000/get/certificate/?id=${certificateId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                responseType: 'arraybuffer'
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `certificado-${certificateId}.pdf`);
+            link.setAttribute('download', `certificado-${dayjs(Date.now()).format('DD-MM-YYYY-HH-mm-ss')}.pdf`);
             document.body.appendChild(link);
             link.click();
-
-            // Limpiar URL temporal
             window.URL.revokeObjectURL(url);
             document.body.removeChild(link);
 
@@ -99,8 +167,39 @@ const CertificadoStatus = () => {
         }
     };
 
-    // muestra las solicitudes que fueron realizadas durante los ultimos 3 meses 
-    // Muestra las solicitudes de forma ordenadas por numero solicitud de mas actualizada a la mas antigua.
+    const handleModalDownload = () => {
+        if (currentCertificateId) {
+            handleDownload(currentCertificateId);
+        }
+    };
+
+    const handleShowRejectionReason = (reason) => {
+        Swal.fire({
+            title: 'Motivo de Rechazo',
+            text: reason || 'No se especificó un motivo',
+            icon: 'info',
+            iconColor: '#ef4444',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3b82f6',
+            showClass: {
+                popup: 'swal2-show',
+                backdrop: 'swal2-backdrop-show'
+            },
+            hideClass: {
+                popup: 'swal2-hide',
+                backdrop: 'swal2-backdrop-hide'
+            }
+        });
+    };
+
+    const handleCloseModal = () => {
+        if (previewUrl) {
+            window.URL.revokeObjectURL(previewUrl);
+        }
+        setPreviewUrl('');
+        setIsModalOpen(false);
+    };
+
     useEffect(() => {
         const fetchRequests = async () => {
             try {
@@ -112,10 +211,7 @@ const CertificadoStatus = () => {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
     
-                // Calcular la fecha de hace 3 meses
                 const threeMonthsAgo = dayjs().subtract(3, 'month');
-    
-                // Filtrar y ordenar las solicitudes
                 const filteredAndSortedRequests = response.data
                     .filter(request => dayjs(request.dateCreation).isAfter(threeMonthsAgo))
                     .sort((a, b) => b.id - a.id);
@@ -123,7 +219,6 @@ const CertificadoStatus = () => {
                 setRequests(filteredAndSortedRequests);
             } catch (error) {
                 console.error('Error al obtener solicitudes:', error);
-                // Swal.fire('Error', 'No se pudo cargar la lista de solicitudes.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -190,17 +285,36 @@ const CertificadoStatus = () => {
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 text-gray-300">
-                                            { request.status.toUpperCase() === 'APROBADO' &&(
-                                                <button
-                                                    onClick={() => handleDownload(request.id, request.rut)}
-                                                    className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
-                                                >
-                                                    {actionConfig.download.icon}
-                                                    <span>{actionConfig.download.label}</span>
-                                                </button>
-                                            )}
+                                            <div className="flex items-center gap-4">
+                                                {request.status.toUpperCase() === 'APROBADO' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleDownload(request.id)}
+                                                            className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
+                                                        >
+                                                            {actionConfig.download.icon}
+                                                            <span>{actionConfig.download.label}</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handlePreview(request.id)}
+                                                            className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
+                                                        >
+                                                            {actionConfig.preview.icon}
+                                                            <span>{actionConfig.preview.label}</span>
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {request.status.toUpperCase() === 'RECHAZADO' && (
+                                                    <button
+                                                        onClick={() => handleShowRejectionReason(request.rejection_reason)}
+                                                        className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
+                                                    >
+                                                        {actionConfig.rejection.icon}
+                                                        <span>{actionConfig.rejection.label}</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
-
                                     </tr>
                                 ))}
                             </tbody>
@@ -208,6 +322,54 @@ const CertificadoStatus = () => {
                     </div>
                 )}
             </div>
+
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={handleCloseModal}
+                style={modalStyles}
+                contentLabel="PDF Preview"
+            >
+                <div className="flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-white">Vista previa del certificado</h2>
+                        <button
+                            onClick={handleCloseModal}
+                            className="text-gray-300 hover:text-white"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div className="flex-1 bg-white rounded-lg overflow-hidden">
+                        {loadingPdf ? (
+                            <div className="flex items-center justify-center h-full">
+                                <p className="text-lg font-semibold">Cargando PDF...</p>
+                            </div>
+                        ) : previewUrl && (
+                            <iframe
+                                src={previewUrl}
+                                type="application/pdf"
+                                width="100%"
+                                height="100%"
+                                className="h-full min-h-[500px]"
+                                title="PDF Preview"
+                            />
+                        )}
+                    </div>
+                    {previewUrl && !loadingPdf && (
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={handleModalDownload}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                            >
+                                <FaDownload size={16} />
+                                <span>Descargar PDF</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -1,0 +1,17 @@
+services:
+  - type: static
+    name: front-junta-vecinos
+    runtime: static
+    branch: prodution
+    rootDir: sistema-junta-vecinal/front-junta-vecinos # Ruta al directorio que contiene package.json
+    buildCommand: cd ${RENDER_ROOT_DIR} && npm install && npm run build
+    staticPublishPath: ${RENDER_ROOT_DIR}/build
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: REACT_APP_API_URL
+        value: https://mysite-ix48.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

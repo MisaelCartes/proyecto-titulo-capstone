@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: front-junta-vecinos
+    runtime: static
+    branch: main
+    rootDir: sistema-junta-vecinal/front-junta-vecinos
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    buildFilter:
+      paths:
+        - sistema-junta-vecinal/front-junta-vecinos/**/*.js
+        - sistema-junta-vecinal/front-junta-vecinos/**/*.jsx
+        - sistema-junta-vecinal/front-junta-vecinos/**/*.css
+        - sistema-junta-vecinal/front-junta-vecinos/**/*.html
+      ignoredPaths:
+        - sistema-junta-vecinal/front-junta-vecinos/**/*.test.js
+        - sistema-junta-vecinal/front-junta-vecinos/node_modules/**
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: REACT_APP_API_URL
+        value: https://mysite-ix48.onrender.com

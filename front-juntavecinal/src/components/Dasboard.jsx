@@ -48,19 +48,28 @@ const Dashboard = () => {
 
   const transformMonthlyData = (data) => {
     if (!data) return [];
-    return data.map(item => ({
-      month: new Date(item.month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
-      visits: item.count
-    }));
+    return data.map(item => {
+      // Separamos el año y mes
+      const [year, month] = item.month.split('-');
+      // Creamos la fecha con el día 1 para asegurar consistencia
+      // Restamos 1 al mes porque JavaScript espera meses en base 0
+      const date = new Date(year, parseInt(month) - 1, 1);
+      
+      return {
+        month: capitalize(date.toLocaleDateString('es-ES', { 
+          month: 'long',
+          year: 'numeric'
+        })),
+        visits: item.count
+      };
+    });
   };
-
-  // Configuración común para los gráficos
-  const chartSettings = {
-    width: 450,
-    height: 250,
-    margin: { top: 20, bottom: 20, left: 20, right: 20 },
+  
+  // Helper function to capitalize first letter
+  const capitalize = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   };
-
+  
   // Configuración específica para gráficos circulares
   const pieChartSettings = {
     width: 450,
@@ -103,7 +112,7 @@ const Dashboard = () => {
   }
 
   const getTooltipContent = (params) => {
-    return `${params.value} usuarios`;
+    return `${params.value}`;
   };
 
   return (
@@ -134,17 +143,17 @@ const Dashboard = () => {
           <Grid item xs={12} md={6}>
             <div style={{ backgroundColor: cardBgColor }} className="p-4 rounded-lg">
               <h3 className="text-xl font-semibold mb-4" style={{ color: textColor }}>
-                Demografía de Usuarios y Miembros
+                Distribución de Miembros por Edad
               </h3>
               <PieChart
                 colors={['#38bdf8', '#14b8a6', '#c084fc', '#f472b6']}
                 series={[{
                   data: transformDemographicData(dashboardData.demografia_usuarios_y_miembros),
                   highlightScope: { faded: 'global', highlighted: 'item' },
-                  valueFormatter: (item) => `${item.value} usuarios`,
+                  valueFormatter: (item) => `${item.value}`,
                   arcLabel: null,
                   tooltip: {
-                    formatter: (params) => `${params.name}: ${params.value} usuarios`
+                    formatter: (params) => `${params.name}: ${params.value}`
                   }
                 }]}
                 {...pieChartSettings}

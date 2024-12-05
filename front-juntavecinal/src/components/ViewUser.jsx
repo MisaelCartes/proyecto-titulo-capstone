@@ -176,9 +176,7 @@ const ViewUser = () => {
                 </div>
             </div>
 
-            <p className="mb-4" style={{ color: themes.text }}>
-                Una lista de todos los usuarios en tu cuenta, incluyendo su nombre, rut, correo electrónico y rol.
-            </p>
+    
 
             <div className="overflow-x-auto rounded-lg shadow-lg border-2 border-gray-600">
                 <table className="min-w-full bg-gray-800 text-white">
@@ -206,10 +204,15 @@ const ViewUser = () => {
                                         <NavLink to={`/user/${user.rut}/edit`} title="Edit" className="text-green-500 hover:text-green-400 mx-0.5">
                                             <FaEdit className="h-5 w-5" />
                                         </NavLink>
+
                                         <button
-                                            title="Delete"
-                                            className="text-red-600 hover:text-red-500 mx-0.5"
-                                            onClick={() => handleDelete(user.rut)}
+                                            title={user.role === 1 ? "No puedes eliminar a un administrador" : "Delete"}
+                                            className={`mx-0.5 ${user.role === 1
+                                                    ? 'text-gray-400 cursor-not-allowed'
+                                                    : 'text-red-600 hover:text-red-500'
+                                                }`}
+                                            onClick={() => user.role !== 1 && handleDelete(user.rut)}
+                                            disabled={user.role === 1}
                                         >
                                             <FaTrashAlt className="h-5 w-5" />
                                         </button>
@@ -225,11 +228,10 @@ const ViewUser = () => {
                 <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className={`px-3 py-2 rounded-md ${
-                        currentPage === 1
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
-                    } text-white flex items-center`}
+                    className={`px-3 py-2 rounded-md ${currentPage === 1
+                        ? 'bg-gray-600 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                        } text-white flex items-center`}
                 >
                     <FaChevronLeft className="mr-1" />
                     Anterior
@@ -240,11 +242,10 @@ const ViewUser = () => {
                         <button
                             key={page}
                             onClick={() => handlePageChange(page)}
-                            className={`px-4 py-2 rounded-md ${
-                                currentPage === page
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                            }`}
+                            className={`px-4 py-2 rounded-md ${currentPage === page
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                }`}
                         >
                             {page}
                         </button>
@@ -254,11 +255,10 @@ const ViewUser = () => {
                 <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className={`px-3 py-2 rounded-md ${
-                        currentPage === totalPages
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
-                    } text-white flex items-center`}
+                    className={`px-3 py-2 rounded-md ${currentPage === totalPages
+                        ? 'bg-gray-600 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                        } text-white flex items-center`}
                 >
                     Siguiente
                     <FaChevronRight className="ml-1" />

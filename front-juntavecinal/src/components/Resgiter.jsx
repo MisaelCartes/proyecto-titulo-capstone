@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import validarRut from '../middlewares/validarRut';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import regionesData from '../../src/utils/comunaRegion.json'
+
+const { regiones, comunasPorRegion } = regionesData;
 
 // Validaciones
 const isValidCharacter = (value) => /^[A-Za-zÀ-ÿ\s]+$/.test(value);
 const isValidChileanPhoneNumber = (phone) => /^9\d{8}$/.test(phone);
 const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -23,12 +28,28 @@ const Register = () => {
     role: 'MEMBER',
     photo: null,
     housingType: '',
-    dateOfBirth: '', // Nuevo campo añadido
+    dateOfBirth: '',
+    comuna: '',
+    region: '',
   });
 
   const { themes } = useTheme();
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [availableComunas, setAvailableComunas] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  useEffect(() => {
+    if (formData.region) {
+      setAvailableComunas(comunasPorRegion[formData.region] || []);
+      if (!comunasPorRegion[formData.region]?.includes(formData.comuna)) {
+        setFormData(prev => ({ ...prev, comuna: '' }));
+      }
+    } else {
+      setAvailableComunas([]);
+    }
+  }, [formData.region]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,7 +115,7 @@ const Register = () => {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
-      
+
       if (age < 18) {
         newErrors.dateOfBirth = "Debes ser mayor de 18 años";
       } else if (age > 120) {
@@ -140,6 +161,14 @@ const Register = () => {
     } else if (formData.password.length < 6) {
       newErrors.password = "La contraseña debe tener al menos 6 caracteres";
     }
+    // Validación región y comuna
+    if (!formData.region) {
+      newErrors.region = "Debe seleccionar una región";
+    }
+
+    if (!formData.comuna) {
+      newErrors.comuna = "Debe seleccionar una comuna";
+    }
 
     return newErrors;
   };
@@ -157,26 +186,37 @@ const Register = () => {
     }
 
     try {
-      // Crear FormData y agregar todos los campos
       const formDataToSend = new FormData();
 
-      // Agregar campos de texto
+      // Obtener el nombre de la región seleccionada
+      const regionSeleccionada = regiones.find(r => r.id === formData.region);
+      const nombreRegion = regionSeleccionada ? regionSeleccionada.name : '';
+
+      // Agregar campos al FormData
       Object.keys(formData).forEach(key => {
         if (key === 'rut') {
           formDataToSend.append(key, formData[key].replace(/\./g, '').toUpperCase());
         } else if (key === 'photo') {
-          // Solo agregar la foto si existe
           if (formData.photo) {
             formDataToSend.append(key, formData.photo);
           }
+        } else if (key === 'region') {
+          // Enviar el nombre de la región
+          formDataToSend.append(key, nombreRegion);
         } else {
           formDataToSend.append(key, formData[key]);
         }
       });
 
+      // Imprimir el FormData para depuración
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+      console.log(formDataToSend)
+
       const response = await axios.post(`${BASE_URL}/register/`, formDataToSend, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Importante para archivos
+          'Content-Type': 'multipart/form-data',
         },
       });
 
@@ -193,11 +233,12 @@ const Register = () => {
     } catch (error) {
       console.error('Error al registrarse:', error);
 
-      // Manejo mejorado de errores
       let errorMessage = "Hubo un error al registrar al usuario. Por favor, intente nuevamente.";
 
       if (error.response) {
-        if (error.response.data.rut) {
+        if (error.response.status === 400 && error.response.data.error === "Invalid comuna request") {
+          errorMessage = "Comuna inválida. Por favor, seleccione una comuna válida.";
+        } else if (error.response.data.rut) {
           errorMessage = error.response.data.rut[0];
         } else if (error.response.data.photo) {
           errorMessage = "Error con la foto: " + error.response.data.photo[0];
@@ -216,6 +257,28 @@ const Register = () => {
     }
   };
 
+  const Loader = () => {
+    return (
+      <div className="flex justify-center items-center">
+        <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="white">
+          <g fill="none" fillRule="evenodd">
+            <g transform="translate(1 1)" strokeWidth="2">
+              <circle strokeOpacity=".5" cx="18" cy="18" r="18" />
+              <path d="M36 18c0-9.94-8.06-18-18-18">
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="0 18 18"
+                  to="360 18 18"
+                  dur="1s"
+                  repeatCount="indefinite" />
+              </path>
+            </g>
+          </g>
+        </svg>
+      </div>
+    );
+  };
   return (
     <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8" style={{ backgroundColor: themes.background }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -358,6 +421,55 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Región */}
+            <div>
+              <label htmlFor="region" className="block text-sm font-medium leading-6 text-white">
+                Región
+              </label>
+              <div className="mt-2">
+                <select
+                  id="region"
+                  name="region"
+                  value={formData.region}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-md bg-gray-700 py-2 px-3 text-white border-0 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                >
+                  <option value="">Seleccione una región</option>
+                  {regiones.map(region => (
+                    <option key={region.id} value={region.id}>{region.name}</option>
+                  ))}
+                </select>
+                {errors.region && <p className="text-red-500 text-xs mt-1">{errors.region}</p>}
+              </div>
+            </div>
+
+            {/* Comuna */}
+            <div>
+              <label htmlFor="comuna" className="block text-sm font-medium leading-6 text-white">
+                Comuna
+              </label>
+              <div className="mt-2">
+                <select
+                  id="comuna"
+                  name="comuna"
+                  value={formData.comuna}
+                  onChange={handleChange}
+                  required
+                  disabled={!formData.region}
+                  className={`block w-full rounded-md bg-gray-700 py-2 px-3 text-white border-0 
+                    focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 
+                    ${!formData.region ? 'opacity-50' : ''}`}
+                >
+                  <option value="">Seleccione una comuna</option>
+                  {availableComunas.map(comuna => (
+                    <option key={comuna} value={comuna}>{comuna}</option>
+                  ))}
+                </select>
+                {errors.comuna && <p className="text-red-500 text-xs mt-1">{errors.comuna}</p>}
+              </div>
+            </div>
+
             {/* Teléfono */}
             <div>
               <label htmlFor="phoneNumber" className="block text-sm font-medium leading-6 text-white">
@@ -448,10 +560,11 @@ const Register = () => {
               <button
                 type="submit"
                 className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold 
-                         leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline 
-                         focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+             leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline 
+             focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                disabled={isLoading}
               >
-                Crear cuenta
+                {isLoading ? <Loader /> : "Crear cuenta"}
               </button>
             </div>
           </form>

@@ -26,10 +26,8 @@ export const FamilyRegister = () => {
   const [rut, setRut] = useState('');
   const token = localStorage.getItem('token');
 
-  // Validar la autenticidad del usuario
   useValidateRoleAndAccessToken(['1', '2'], '/login');
 
-  // Efecto para obtener y establecer el RUT del token
   useEffect(() => {
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -41,19 +39,16 @@ export const FamilyRegister = () => {
     }
   }, [token]);
 
-  // Función mejorada para validar email
   const validateEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return emailRegex.test(email);
   };
 
-  // Función mejorada para validar teléfono chileno
   const validatePhone = (phone) => {
     const phoneRegex = /^(\+?56|0056)?(\s?)((9\d{8})|(2\d{7}))$/;
     return phoneRegex.test(phone);
   };
 
-  // Función para formatear RUT
   const formatRut = (rut) => {
     if (!rut) return '';
 
@@ -118,7 +113,6 @@ export const FamilyRegister = () => {
     const { name, value } = e.target;
     let formattedValue = value;
 
-    // Formatear RUT si es necesario
     if (name === 'rutMember') {
       formattedValue = formatRut(value);
     }
@@ -128,7 +122,6 @@ export const FamilyRegister = () => {
       [name]: formattedValue
     }));
 
-    // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -137,17 +130,20 @@ export const FamilyRegister = () => {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      ...initialFormState,
+      rut: rut // Mantener el rut del usuario actual
+    });
+    setErrors({});
+    setIsSubmitting(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       const errorMessages = Object.values(errors).join('\n');
-      // Swal.fire({
-      //   title: 'Error de Validación',
-      //   text: 'Por favor, corrija los siguientes errores:\n' + errorMessages,
-      //   icon: 'error',
-      //   confirmButtonText: 'Entendido'
-      // });
       console.log(errorMessages)
       return;
     }
@@ -171,21 +167,21 @@ export const FamilyRegister = () => {
           timer: 2000,
           timerProgressBar: true
         });
-
-        // Limpiar el formulario después de un registro exitoso
-        setFormData(initialFormState);
-        setErrors({});
+        
+        resetForm();
       }
     } catch (error) {
       console.error('Error:', error);
-
+    
       let errorMessage = 'Error al registrar el miembro';
-      if (error.response?.data?.error) {
+      if (error.response?.status === 400 && error.response?.data?.error === 'Family member with this rut already exists') {
+        errorMessage = 'El integrante ya existe en tu grupo familiar';
+      } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;
       }
-
+    
       await Swal.fire({
         title: 'Error',
         text: errorMessage,
@@ -356,7 +352,17 @@ export const FamilyRegister = () => {
               disabled={isSubmitting}
               className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              {isSubmitting ? 'Registrando...' : 'Registrar Miembro'}
+              {isSubmitting ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Registrando...
+                </div>
+              ) : (
+                'Registrar Miembro'
+              )}
             </button>
           </div>
         </form>
